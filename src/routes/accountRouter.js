@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 const Account = require("../models/accounts");
-const { handleLogin } = require("../controllers/accountController");
+const { handleLogin, createUser } = require("../controllers/accountController");
 /* GET users listing. */
 // router.post("/", async function (req, res, next) {
 //   let data = req.body;
@@ -16,11 +16,9 @@ const { handleLogin } = require("../controllers/accountController");
 //   res.send(result);
 // });
 
-router.get("/login", handleLogin);
+router.post("/login", handleLogin);
 
-router.get("/register", async function (req, res, next) {
-  res.send("hi");
-});
+router.post("/register", createUser);
 
 router.get("/recover");
 

@@ -6,7 +6,7 @@ const accountSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  mail: {
+  email: {
     type: String,
     required: true,
   },
@@ -27,7 +27,7 @@ const accountSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["user", "staff", "admin"],
-    require: true,
+    default: "user",
   },
 
   cart_id: [
