@@ -139,10 +139,56 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const viewProfile = async (req, res) => {
+  let id = req.params.accountId;
+  try {
+    const account = await Account.findOne({ _id: id });
+    res.status(200).json({ account });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  let id = req.params.accountId;
+  let { address, phone, email } = req.body;
+
+  try {
+    let check = await Account.findOne({ email });
+    if (!check) {
+      let user = await Account.updateOne(
+        { _id: id },
+        { address, phone, email }
+      );
+      return res.status(200).json({ user, message: "Update successful" });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "Email already exists in our system" });
+    }
+  } catch (error) {
+    return res.status(404).json({ message: error });
+  }
+};
+
+const deleteProfile = async (req, res) => {
+  try {
+    let id = req.params.accountId;
+    let account = await Account.deleteById({ _id: id });
+    return res.status(200).json({ account, message: "Delete successful" });
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({ message: error });
+  }
+};
 module.exports = {
   handleLogin,
   createUser,
   handleLogout,
   forgotPassword,
   resetPassword,
+  viewProfile,
+  updateProfile,
+  deleteProfile,
 };
