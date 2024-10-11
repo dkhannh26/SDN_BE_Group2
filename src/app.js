@@ -9,6 +9,7 @@ const hostname = process.env.HOST_NAME;
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
+var voucherRouter = require("./routes/voucher");
 
 var app = express();
 
@@ -22,6 +23,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/vouchers", voucherRouter)
 
 // (async () => {
 //   try {
