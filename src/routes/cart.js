@@ -4,10 +4,10 @@ var cartRouter = express.Router();
 
 
 cartRouter.get('/', cartController.getList);
-cartRouter.post('/', cartController.createcart);
+cartRouter.post('/', cartController.createCart);
 cartRouter.delete('/', cartController.deleteAllCart);
-cartRouter.get('/:cartId', cartController.getcartById);
-cartRouter.put('/:cartId', cartController.updatecartById);
-cartRouter.delete('/:cartId', cartController.deletecartById);
+cartRouter.get('/:cartId', cartController.getCartById);
+cartRouter.put('/:cartId', cartController.updateCartById);
+cartRouter.delete('/:cartId', cartController.deleteCartById);
 
 module.exports = cartRouter;

@@ -1,6 +1,6 @@
 const Carts = require('../models/cart');
 
-class cartController {
+class CartController {
     getList(req, res, next) {
         Carts.find({})
             .then((Carts) => {
@@ -10,7 +10,7 @@ class cartController {
                 res.status(500).json({ error: err.message });
             });
     }
-    createcart(req, res, next) {
+    createCart(req, res, next) {
         Carts.create(req.body)
             .then((cart) => {
                 res.status(201).json(cart);
@@ -28,7 +28,7 @@ class cartController {
                 res.status(500).json({ error: err.message });
             });
     }
-    getcartById(req, res, next) {
+    getCartById(req, res, next) {
         Carts.findById(req.params.cartId)
             .then((cart) => {
                 if (!cart) return res.status(404).json({ message: 'cart not found' });
@@ -38,7 +38,7 @@ class cartController {
                 res.status(500).json({ error: err.message });
             });
     }
-    updatecartById(req, res, next) {
+    updateCartById(req, res, next) {
         Carts.findByIdAndUpdate(req.params.cartId, req.body, { new: true })
             .then((cart) => {
                 if (!cart) return res.status(404).json({ message: 'cart not found' });
@@ -48,7 +48,7 @@ class cartController {
                 res.status(500).json({ error: err.message });
             });
     }
-    deletecartById(req, res, next) {
+    deleteCartById(req, res, next) {
         Carts.findByIdAndDelete(req.params.cartId)
             .then((cart) => {
                 if (!cart) return res.status(404).json({ message: 'cart not found' });
@@ -60,4 +60,4 @@ class cartController {
     }
 }
 
-module.exports = new cartController;
+module.exports = new CartController;
