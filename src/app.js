@@ -9,7 +9,7 @@ const hostname = process.env.HOST_NAME;
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
-var cartRouter = require("./routes/cart");
+var sizeRouter = require("./routes/size");
 
 var app = express();
 
@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/cart", cartRouter)
+app.use("/size", sizeRouter)
 
 // (async () => {
 //   try {
