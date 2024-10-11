@@ -1,10 +1,11 @@
 const Orders = require('../models/orders');
 const OrderDetails = require('../models/order_details');
+const Accounts = require('../models/accounts');
 
 class OrderController {
     getList(req, res, next) {
         Orders.find({})
-            .populate('account_id', 'username')
+            .populate('account_id')
             .then((orders) => {
                 res.status(200).json(orders);
             })
@@ -62,7 +63,7 @@ class OrderController {
             });
     }
     getOrderByAccountId(req, res, next) {
-        Orders.find({ accountId: req.params.accountId })
+        Orders.find({ account_id: req.params.accountId })
             .populate('account_id', 'username')
             .then((orders) => {
                 if (!orders) return res.status(404).json({ message: 'orders not found' });
@@ -83,7 +84,7 @@ class OrderController {
             });
     }
     getOrderListByAccountId(req, res, next) {
-        Orders.find({ accountId: req.params.accountId, status: { $in: ['delivered', 'processing', 'pending'] } })
+        Orders.find({ account_id: req.params.accountId, status: { $in: ['delivered', 'processing', 'pending'] } })
             .then((orders) => {
                 if (!orders) return res.status(404).json({ message: 'orders not found' });
                 res.status(200).json(orders);

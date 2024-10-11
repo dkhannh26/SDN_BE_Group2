@@ -9,11 +9,11 @@ orderRouter.delete('/', orderController.deleteAllOrder);
 orderRouter.get('/:orderId', orderController.getOrderById);
 orderRouter.put('/:orderId', orderController.updateOrderById);
 orderRouter.delete('/:orderId', orderController.deleteOrderById);
-orderRouter.get('/orderId', orderController.getOrderDetails);
-orderRouter.get('/:accountId', orderController.getOrderByAccountId);
-orderRouter.get('/accountId', orderController.getOrderHistoryByAccountId);
-orderRouter.get('/:accountId', orderController.getOrderListByAccountId);
-orderRouter.put('/:accountId', orderController.confirmOrder);
-orderRouter.put('/:accountId', orderController.cancelOrder);
+orderRouter.get('/details/:orderId', orderController.getOrderDetails);
+orderRouter.put('/confirm/:orderId', orderController.confirmOrder);
+orderRouter.put('/cancel/:orderId', orderController.cancelOrder);
+orderRouter.get('/account/:accountId', orderController.getOrderByAccountId);
+orderRouter.get('/history/:accountId', orderController.getOrderHistoryByAccountId);
+orderRouter.get('/list/:accountId', orderController.getOrderListByAccountId);
 
 module.exports = orderRouter;
