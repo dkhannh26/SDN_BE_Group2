@@ -5,27 +5,20 @@ const {
   handleLogin,
   createUser,
   handleLogout,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/accountController");
-/* GET users listing. */
-// router.post("/", async function (req, res, next) {
-//   let data = req.body;
-//   let result = await Customer.create({
-//     name: data.name,
-//     address: data.address,
-//     phone: data.phone,
-//     email: data.email,
-//     image: data.image,
-//     description: data.description,
-//   });
-//   res.send(result);
-// });
 
 router.post("/login", handleLogin);
 
 router.post("/register", createUser);
 
-router.get("/recover");
-
 router.post("/logout", handleLogout);
+
+router.get("/:id");
+
+router.post("/forgot-password", forgotPassword);
+
+router.post("/reset-password/:username/:token", resetPassword);
 
 module.exports = router;
