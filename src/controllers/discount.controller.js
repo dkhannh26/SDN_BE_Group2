@@ -14,7 +14,7 @@ class DiscountController {
     create(req, res, next) {
         DiscountModel.create(req.body)
             .then(() => {
-                res.send('Create successfully')
+                res.send('Create discount successfully')
             })
             .catch(error => {
                 console.log(error)
@@ -34,7 +34,7 @@ class DiscountController {
     update(req, res, next) {
         DiscountModel.updateOne({ _id: req.params.id }, req.body)
             .then(() => {
-                res.send('Update successfully')
+                res.send('Update discount successfully')
             })
             .catch(error => {
                 console.log(error)
@@ -44,7 +44,7 @@ class DiscountController {
     delete(req, res, next) {
         DiscountModel.deleteOne({ _id: req.params.id })
             .then(() => {
-                res.send('Delete successfully')
+                res.send('Delete discount successfully')
             })
             .catch(error => {
                 console.log(error)
