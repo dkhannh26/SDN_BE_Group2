@@ -1,7 +1,11 @@
 var express = require("express");
 var router = express.Router();
 const Account = require("../models/accounts");
-const { handleLogin, createUser } = require("../controllers/accountController");
+const {
+  handleLogin,
+  createUser,
+  handleLogout,
+} = require("../controllers/accountController");
 /* GET users listing. */
 // router.post("/", async function (req, res, next) {
 //   let data = req.body;
@@ -21,5 +25,7 @@ router.post("/login", handleLogin);
 router.post("/register", createUser);
 
 router.get("/recover");
+
+router.post("/logout", handleLogout);
 
 module.exports = router;

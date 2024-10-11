@@ -54,7 +54,7 @@ const createUserService = async (
       phone,
       role,
     });
-    return result;
+    return { user: result, message: "User created successfully" };
   } catch (error) {
     console.log(error);
     return null;

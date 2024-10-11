@@ -3,7 +3,7 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 require("dotenv").config();
-
+const session = require("express-session");
 const connection = require("./config/database");
 const hostname = process.env.HOST_NAME;
 
@@ -12,6 +12,17 @@ var accountRouter = require("./routes/accountRouter");
 
 var app = express();
 
+app.use(
+  session({
+    secret: "dotai_secret_key", // Secret key để ký session ID cookie
+    resave: false, // Không lưu session nếu không thay đổi
+    saveUninitialized: true, // Lưu session mới ngay cả khi nó chưa được thay đổi
+    cookie: {
+      maxAge: 60000, // Thời gian sống của cookie (ở đây là 1 phút)
+      secure: false, // Đặt thành true nếu sử dụng HTTPS
+    },
+  })
+);
 // app.use(logger("dev"));
 
 app.use(express.json());
@@ -22,17 +33,5 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/account", accountRouter);
-
-// (async () => {
-//   try {
-//     //test connection
-//     await connection();
-//     app.listen(port, () => {
-//       console.log(`Example app listening on port ${port}`);
-//     });
-//   } catch (error) {
-//     console.log("Error: " + error);
-//   }
-// })();
 
 module.exports = app;
