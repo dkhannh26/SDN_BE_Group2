@@ -101,7 +101,7 @@ class OrderController {
                 res.status(200).json(order);
                 setTimeout(() => {
                     Orders.findByIdAndUpdate(req.params.orderId, { status: 'delivered' }, { new: true })
-                        .then((updateOrder) => {
+                        .then(() => {
                             console.log('order has been delivered');
                         })
                         .catch((err) => {
