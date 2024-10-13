@@ -7,8 +7,7 @@ const discountsSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    expired_at: String,
-    //
+    expired_at: Date,
 
     accessory_id: [
       {
@@ -46,6 +45,6 @@ const discountsSchema = new mongoose.Schema(
 // Override all methods
 discountsSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
-const Discounts = mongoose.model("discounts", projectSchema);
+const Discounts = mongoose.model("discounts", discountsSchema);
 
 module.exports = Discounts;
