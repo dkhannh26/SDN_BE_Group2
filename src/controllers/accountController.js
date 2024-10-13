@@ -1,7 +1,8 @@
 const {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
-} = require("../email/email");
+  sendWelcomeEmail,
+} = require("../mailtrap/email");
 const Account = require("../models/accounts");
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
@@ -55,6 +56,8 @@ const createUser = async (req, res) => {
       phone,
       role,
     });
+
+    await sendWelcomeEmail(email);
     return res
       .status(404)
       .json({ user: result, message: "User created successfully" });

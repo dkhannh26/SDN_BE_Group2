@@ -9,7 +9,7 @@ const mailtrapClient = new MailtrapClient({
 
 const sender = {
   email: "dotaiveriy@demomailtrap.com",
-  name: "Dotai",
+  name: "Dotai Authentication",
 };
 
 module.exports = { mailtrapClient, sender };

@@ -6,7 +6,7 @@ require("dotenv").config();
 const session = require("express-session");
 const connection = require("./config/database");
 const hostname = process.env.HOST_NAME;
-
+const cors = require("cors");
 var indexRouter = require("./routes/index");
 var accountRouter = require("./routes/accountRouter");
 
@@ -24,7 +24,7 @@ app.use(
   })
 );
 // app.use(logger("dev"));
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
