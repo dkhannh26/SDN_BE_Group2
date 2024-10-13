@@ -3,6 +3,9 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 require("dotenv").config();
+var cors = require('cors')
+var app = express()
+
 
 const connection = require("./config/database");
 const hostname = process.env.HOST_NAME;
@@ -11,6 +14,7 @@ var indexRouter = require("./routes/index");
 
 var app = express();
 
+app.use(cors())
 // app.use(logger("dev"));
 
 app.use(express.json());
