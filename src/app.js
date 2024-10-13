@@ -2,6 +2,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+var cors = require('cors');
 require("dotenv").config();
 
 const connection = require("./config/database");
@@ -15,6 +16,7 @@ var app = express();
 
 // app.use(logger("dev"));
 
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
