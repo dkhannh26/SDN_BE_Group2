@@ -19,16 +19,19 @@ const handleLogin = async (req, res) => {
       const isMatchPassword = await bcrypt.compare(password, user.password);
 
       if (!isMatchPassword) {
-        return res
-          .status(404)
-          .json({ message: "Username or password is incorrect" });
+        return res.status(200).json({
+          EC: 1,
+          message: "Username or password is incorrect",
+        });
       } else {
         req.session.userId = username;
 
-        return res.status(200).json({ message: "Login successful" });
+        return res
+          .status(200)
+          .json({ EC: 0, message: "Login successful", user });
       }
     } else {
-      return res.status(404).json({ message: "Account does not exist" });
+      return res.status(200).json({ EC: 1, message: "Account does not exist" });
     }
   } catch (error) {
     console.log(error);
