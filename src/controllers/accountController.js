@@ -1,8 +1,9 @@
+require("dotenv").config();
 const {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
-  sendWelcomeEmail,
-} = require("../mailtrap/email");
+  sendVerifyCreate,
+} = require("../nodemailer/email");
 const Account = require("../models/accounts");
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
@@ -10,7 +11,7 @@ const session = require("express-session");
 const crypto = require("crypto");
 const aqp = require("api-query-params");
 const saltRounds = 10;
-
+const jwt = require("jsonwebtoken");
 const handleLogin = async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -39,16 +40,41 @@ const handleLogin = async (req, res) => {
   }
 };
 
+const verifyCreate = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const account = await Account.findOne({ email });
+    if (account) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Your email already exist" });
+    }
+
+    const token = jwt.sign(req.body, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+    // send email
+    await sendVerifyCreate(
+      email,
+      `${process.env.CLIENT_URL}/account/register/${token}`
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "An email has been sent to your account",
+    });
+  } catch (error) {
+    console.log("Error in sending email ", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 const createUser = async (req, res) => {
-  const { username, email, password, phone, address, role } = req.body;
+  const { token } = req.params;
+  const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+  const { username, email, password, phone, address, role } = decoded;
 
   try {
-    const user = await Account.findOne({ username });
-    if (user) {
-      return res.status(404).json({
-        message: "Username already exists",
-      });
-    }
     //hash password
     const hashPassword = await bcrypt.hash(password, saltRounds);
     let result = await Account.create({
@@ -60,7 +86,7 @@ const createUser = async (req, res) => {
       role,
     });
 
-    await sendWelcomeEmail(email);
+    // await sendWelcomeEmail(email);
     return res
       .status(404)
       .json({ user: result, message: "User created successfully" });
@@ -90,19 +116,14 @@ const forgotPassword = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    // const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
-
-    // account.resetPasswordToken = resetToken;
-    // account.resetPasswordExpiresAt = resetTokenExpiresAt;
-
-    // await account.save();
+    const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
 
     // send email
     await sendPasswordResetEmail(
       account.email,
-      `${process.env.CLIENT_URL}/reset-password/${account.username}/${resetToken}`
+      `${process.env.CLIENT_URL}/account/reset-password/${token}`
     );
 
     res.status(200).json({
@@ -117,10 +138,13 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { token, username } = req.params;
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { email } = decoded;
+
     const { password } = req.body;
 
-    const account = await Account.findOne({ username });
+    const account = await Account.findOne({ email });
 
     if (!account) {
       return res
@@ -197,4 +221,5 @@ module.exports = {
   viewProfile,
   updateProfile,
   deleteProfile,
+  verifyCreate,
 };

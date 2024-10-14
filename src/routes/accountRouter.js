@@ -10,17 +10,20 @@ const {
   viewProfile,
   updateProfile,
   deleteProfile,
+  verifyCreate,
 } = require("../controllers/accountController");
 
 router.post("/login", handleLogin);
 
-router.post("/register", createUser);
+router.post("/register", verifyCreate);
+
+router.post("/register/:token", createUser);
 
 router.post("/logout", handleLogout);
 
 router.post("/forgot-password", forgotPassword);
 
-router.post("/reset-password/:username/:token", resetPassword);
+router.post("/reset-password/:token", resetPassword);
 
 router.get("/:accountId", viewProfile);
 
