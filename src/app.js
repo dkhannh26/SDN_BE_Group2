@@ -3,16 +3,17 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 require("dotenv").config();
+const fileUpload = require("express-fileupload");
 
 const connection = require("./config/database");
 const hostname = process.env.HOST_NAME;
 
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
 var productRouter = require("./routes/productRouter");
 
 var app = express();
 
+app.use(fileUpload());
 // app.use(logger("dev"));
 
 app.use(express.json());
@@ -22,7 +23,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
 app.use("/products", productRouter);
 
 // (async () => {
