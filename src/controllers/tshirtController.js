@@ -1,22 +1,33 @@
 const Tshirt = require("../models/tshirts");
+const Image = require("../models/images");
+const Pant_shirt_size_detail = require("../models/pant_shirt_size_detail");
+const Pant_shirt_size = require("../models/pant_shirt_sizes");
+const Discounts = require("../models/discounts")
 const { uploadMultipleFiles } = require("../services/fileService");
 
 const getTshirtList = async (req, res) => {
   try {
-    // const page = queryString.page;
-    // const { limit, filter, population } = aqp(queryString);
-    // delete filter.page;
-    // const offset = (page - 1) * limit;
-    // // console.log(population);
+    let result = []
+    let tshirts = await Tshirt.find({ deleted: false });
 
-    // let result = await Project.find(filter)
-    //   .populate(population)
-    //   .skip(offset)
-    //   .limit(limit)
-    //   .exec();
+    for (const tshirt of tshirts) {
+      let tshirtImg = await Image.find({ tshirt_id: tshirt._id });
+      let { _id, name, price } = tshirt;
+      let imageUrl = `/images/upload/${_id}/${tshirtImg[0]._id}${tshirtImg[0].file_extension}`;
 
-    let tshirts = await Tshirt.find({});
-    return res.status(200).json({ data: tshirts });
+      let tshirtDiscount = await Discounts.findById(tshirt.discount_id)
+
+      let item = {
+        tshirtId: _id,
+        tshirtName: name,
+        tshirtPrice: price,
+        tshirtImg: imageUrl,
+        tshirtDiscountPercent: tshirtDiscount?.percent
+      };
+
+      result.push(item);
+    }
+    return res.status(200).json({ data: result });
   } catch (error) {
     console.log(error);
     res.status(404).json({ error });
@@ -25,34 +36,32 @@ const getTshirtList = async (req, res) => {
 
 const addTshirt = async (req, res) => {
   try {
-    const { name, quantity, price } = req.body;
-    let tshirt = await Tshirt.create({ name, quantity, price });
-    let imgUrl = [];
-    let imgPath = [];
-    // console.log(req.files);
+    const { name, quantity, price, size, discount_id } = req.body;
+    // let tshirt = await Tshirt.create({ name, quantity, price });
+    // let imgUrl = [];
+    // let imgPath = [];
 
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).json({ message: "No files were uploaded." });
-    } else {
-      let results = await uploadMultipleFiles(req.files.image, tshirt);
+    // if (req.files || Object.keys(req.files).length !== 0) {
+    //   if (!Array.isArray(req.files.image)) {
+    //     req.files.image = [req.files.image];
+    //   }
+    //   let results = await uploadMultipleFiles(req.files.image, tshirt);
 
-      // console.log(results);
-      results.detail.forEach((r) => {
-        imgPath.push(r.path);
+    //   results.detail.forEach((r) => {
+    //     imgPath.push(r.path);
+    //     imgUrl.push(r.name);
+    //   });
 
-        imgUrl.push(r.name);
-      });
+    // }
 
-      // imgUrl.push(results.path);
+
+
+    for (let key in size) {
+      const sizeModel = await Pant_shirt_size.findOne({ size_name: key })
+      Pant_shirt_size_detail.create({ tshirt_id: tshirt._id, size_id: sizeModel._id, quantity: size[key] })
     }
-    // console.log(imgUrl);
 
-    let updateTshirt = await Tshirt.updateOne(
-      { _id: tshirt._id },
-      { images_id: imgUrl }
-    );
-
-    return res.json({ data: imgPath });
+    // return res.json(req.body);
   } catch (error) {
     console.log(error);
     res.status(404).json({ error });
@@ -62,7 +71,7 @@ const addTshirt = async (req, res) => {
 const deleteTshirt = async (req, res) => {
   try {
     const id = req.params.id;
-    let tshirt = await Tshirt.deleteById({ _id: id });
+    let tshirt = await Tshirt.findOneAndUpdate({ _id: id }, { deleted: true });
     return res.status(200).json({ tshirt, message: "Delete successful" });
   } catch (error) {
     console.log(error);

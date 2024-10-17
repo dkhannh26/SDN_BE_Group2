@@ -46,6 +46,6 @@ const discountsSchema = new mongoose.Schema(
 // Override all methods
 discountsSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
-const Discounts = mongoose.model("discounts", projectSchema);
+const Discounts = mongoose.model("discounts", discountsSchema);
 
 module.exports = Discounts;

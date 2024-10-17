@@ -7,6 +7,11 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "pant_shirt_sizes",
     },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     pant_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "pants",
@@ -26,13 +31,6 @@ const schema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "import_details",
-      },
-    ],
-
-    cart_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "carts",
       },
     ],
   },

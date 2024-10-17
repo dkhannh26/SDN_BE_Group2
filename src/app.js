@@ -16,14 +16,15 @@ var app = express();
 app.use(fileUpload());
 // app.use(logger("dev"));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
+var cors = require('cors')
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors())
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
-app.use("/products", productRouter);
+app.use("/product", productRouter);
 
 // (async () => {
 //   try {

@@ -7,7 +7,7 @@ var {
   updateTshirt,
 } = require("../controllers/tshirtController");
 router.get("/tshirt", getTshirtList);
-router.delete("/tshirt/delete/:id", deleteTshirt);
-router.post("/tshirt/create", addTshirt);
-router.put("/tshirt/update", updateTshirt);
+router.delete("/tshirt/:id", deleteTshirt);
+router.post("/tshirt", addTshirt);
+router.put("/tshirt/:id", updateTshirt);
 module.exports = router;

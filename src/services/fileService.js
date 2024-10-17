@@ -16,7 +16,7 @@ const uploadMultipleFiles = async (fileArr, data) => {
       //get name extension
       let extname = path.extname(fileArr[i].name);
       //get img's name without extension
-      let baseName = path.basename(fileArr[i].name, extname);
+      // let baseName = path.basename(fileArr[i].name, extname);
 
       let img = await Image.create({
         file_extension: extname,
