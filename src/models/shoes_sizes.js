@@ -6,6 +6,11 @@ const sizeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
 
   shoes_size_detail_id: [
     {
