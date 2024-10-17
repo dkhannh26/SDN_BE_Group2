@@ -19,9 +19,9 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "pants",
     },
-    tshirt_id: {
+    pant_shirt_detail_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "tshirts",
+      ref: "pant_shirt_size_detail",
     },
     quantity: {
       type: Number,

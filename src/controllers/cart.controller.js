@@ -1,17 +1,59 @@
-const Carts = require('../models/cart');
-
+const Cart = require('../models/cart');
+const Tshirt = require('../models/tshirts');
+const TshirtPantDetail = require('../models/pant_shirt_size_detail')
+const TshirtPantSize = require('../models/pant_shirt_sizes')
+const Image = require('../models/images');
 class CartController {
     getList(req, res, next) {
-        Carts.find({})
-            .then((Carts) => {
-                res.status(200).json(Carts);
+        Cart.find({})
+            .select('pant_shirt_detail_id quantity')
+            .populate('pant_shirt_detail_id', 'size_id tshirt_id')
+            .then((carts) => {
+                const imagesPromises = carts.map((cart) => {
+                    return Image.findOne({
+                        tshirt_id: cart.pant_shirt_detail_id.tshirt_id
+                    });
+                });
+                const sizePromises = carts.map((cart) => {
+                    return TshirtPantSize.findOne({
+                        _id: cart.pant_shirt_detail_id.size_id
+                    });
+                });
+                const tshirtPromises = carts.map((cart) => {
+                    return Tshirt.findOne({
+                        _id: cart.pant_shirt_detail_id.tshirt_id
+                    });
+                });
+                Promise.all([Promise.all(imagesPromises), Promise.all(sizePromises), Promise.all(tshirtPromises)])
+                    .then(([images, sizes, tshirts]) => {
+                        const combinedData = carts.map((cart, index) => {
+                            const cartData = cart.toObject();
+                            delete cartData.pant_shirt_detail_id;
+                            // delete cartData._id;
+                            return {
+                                ...cartData,
+                                image: images[index] ? {
+                                    _id: images[index]._id,
+                                    file_extension: images[index].file_extension
+                                } : null,
+                                size: sizes[index] ? { size_name: sizes[index].size_name } : null,
+                                tshirt: tshirts[index] ? { name: tshirts[index].name, quantity: tshirts[index].quantity, price: tshirts[index].price } : null
+                            };
+                        });
+
+                        res.status(200).json(combinedData);
+                    })
+                    .catch((error) => {
+                        res.status(500).json({ error: error.message });
+                    });
+                // res.status(200).json({ carts });
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });
             });
     }
     createCart(req, res, next) {
-        Carts.create(req.body)
+        Cart.create(req.body)
             .then((cart) => {
                 res.status(201).json(cart);
             })
@@ -20,7 +62,7 @@ class CartController {
             });
     }
     deleteAllCart(req, res, next) {
-        Carts.deleteMany({})
+        Cart.deleteMany({})
             .then((carts) => {
                 res.status(200).json(carts);
             })
@@ -29,7 +71,7 @@ class CartController {
             });
     }
     getCartById(req, res, next) {
-        Carts.findById(req.params.cartId)
+        Cart.findById(req.params.cartId)
             .then((cart) => {
                 if (!cart) return res.status(404).json({ message: 'cart not found' });
                 res.status(200).json(cart);
@@ -39,17 +81,50 @@ class CartController {
             });
     }
     updateCartById(req, res, next) {
-        Carts.findByIdAndUpdate(req.params.cartId, req.body, { new: true })
+        const { quantity } = req.body;
+
+        Cart.findByIdAndUpdate(req.params.cartId, { $set: { quantity } }, { new: true })
+            .populate('pant_shirt_detail_id', 'size_id tshirt_id')
             .then((cart) => {
-                if (!cart) return res.status(404).json({ message: 'cart not found' });
-                res.status(200).json(cart);
+                if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+                const imagePromise = Image.findOne({
+                    tshirt_id: cart.pant_shirt_detail_id.tshirt_id
+                });
+                const sizePromise = TshirtPantSize.findOne({
+                    _id: cart.pant_shirt_detail_id.size_id
+                });
+                const tshirtPromise = Tshirt.findOne({
+                    _id: cart.pant_shirt_detail_id.tshirt_id
+                });
+
+                Promise.all([imagePromise, sizePromise, tshirtPromise])
+                    .then(([image, size, tshirt]) => {
+                        if (!tshirt) return res.status(404).json({ message: 'T-shirt not found' });
+
+                        const cartData = cart.toObject();
+                        delete cartData.pant_shirt_detail_id;
+
+                        const updatedCart = {
+                            ...cartData,
+                            image: image ? { _id: image._id, file_extension: image.file_extension } : null,
+                            size: size ? { size_name: size.size_name } : null,
+                            tshirt: tshirt ? { name: tshirt.name, price: tshirt.price } : null
+                        };
+
+                        res.status(200).json(updatedCart);
+                    })
+                    .catch((error) => {
+                        res.status(500).json({ error: error.message });
+                    });
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });
             });
     }
+
     deleteCartById(req, res, next) {
-        Carts.findByIdAndDelete(req.params.cartId)
+        Cart.findByIdAndDelete(req.params.cartId)
             .then((cart) => {
                 if (!cart) return res.status(404).json({ message: 'cart not found' });
                 res.status(200).json(cart);
