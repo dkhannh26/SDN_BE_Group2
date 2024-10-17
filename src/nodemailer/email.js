@@ -6,6 +6,7 @@ const {
   VERIFICATION_EMAIL_TEMPLATE,
   WELCOME_EMAIL,
   VERIFY_CREATE_ACCOUNT,
+  VERIFY_CHANGE_EMAIL,
 } = require("./emailTemplate.js");
 
 // const sendWelcomeEmail = async (email) => {
@@ -54,6 +55,34 @@ const sendVerifyCreate = async (email, resetURL) => {
     console.error(`Error creating account`, error);
 
     throw new Error(`Error creating account: ${error}`);
+  }
+};
+
+const sendChangeEmail = async (email, resetURL) => {
+  const recipient = [{ email }];
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // true for port 465, false for other ports
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: '"Dotai 👻" <dotaiverify@gmail.com>',
+      to: email,
+      subject: "Verify change your email",
+      html: VERIFY_CHANGE_EMAIL.replace("{resetURL}", resetURL),
+    });
+    console.log("Email has been sent to your account ", info);
+  } catch (error) {
+    console.error(`Error changing email`, error);
+
+    throw new Error(`Error changing email: ${error}`);
   }
 };
 
@@ -119,4 +148,5 @@ module.exports = {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
   sendVerifyCreate,
+  sendChangeEmail,
 };

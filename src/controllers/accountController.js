@@ -27,9 +27,11 @@ const handleLogin = async (req, res) => {
       } else {
         req.session.userId = username;
 
-        return res
-          .status(200)
-          .json({ EC: 0, message: "Login successful", user });
+        return res.status(200).json({
+          EC: 0,
+          message: "Login successful",
+          user,
+        });
       }
     } else {
       return res.status(200).json({ EC: 1, message: "Account does not exist" });
@@ -46,7 +48,7 @@ const verifyCreate = async (req, res) => {
     const account = await Account.findOne({ email });
     if (account) {
       return res
-        .status(400)
+        .status(200)
         .json({ success: false, message: "Your email already exist" });
     }
 
@@ -56,7 +58,7 @@ const verifyCreate = async (req, res) => {
     // send email
     await sendVerifyCreate(
       email,
-      `${process.env.CLIENT_URL}/account/register/${token}`
+      `${process.env.CLIENT_URL}/customer/register/${token}`
     );
 
     res.status(200).json({
@@ -71,6 +73,8 @@ const verifyCreate = async (req, res) => {
 
 const createUser = async (req, res) => {
   const { token } = req.params;
+  // console.log(token);
+
   const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   const { username, email, password, phone, address, role } = decoded;
 
@@ -88,7 +92,7 @@ const createUser = async (req, res) => {
 
     // await sendWelcomeEmail(email);
     return res
-      .status(404)
+      .status(200)
       .json({ user: result, message: "User created successfully" });
   } catch (error) {
     console.log(error);
@@ -105,6 +109,7 @@ const handleLogout = async (req, res) => {
     return res.status(200).json({ message: "Logout successful" });
   });
 };
+
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
@@ -180,28 +185,6 @@ const viewProfile = async (req, res) => {
   }
 };
 
-const updateProfile = async (req, res) => {
-  let id = req.params.accountId;
-  let { address, phone, email } = req.body;
-
-  try {
-    let check = await Account.findOne({ email });
-    if (!check) {
-      let user = await Account.updateOne(
-        { _id: id },
-        { address, phone, email }
-      );
-      return res.status(200).json({ user, message: "Update successful" });
-    } else {
-      return res
-        .status(404)
-        .json({ message: "Email already exists in our system" });
-    }
-  } catch (error) {
-    return res.status(404).json({ message: error });
-  }
-};
-
 const deleteProfile = async (req, res) => {
   try {
     let id = req.params.accountId;
@@ -212,6 +195,66 @@ const deleteProfile = async (req, res) => {
     return res.status(404).json({ message: error });
   }
 };
+
+const verifyChange = async (req, res) => {
+  //làm thêm cái email template dể khi đổi email thì send về đó
+
+  let id = req.params.accountId;
+  let { email, address, phone } = req.body;
+
+  try {
+    let check = await Account.findOne({ email });
+    if (!check) {
+      const token = jwt.sign(
+        { email, address, phone },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: process.env.JWT_EXPIRE,
+        }
+      );
+      // send email
+      await sendVerifyCreate(
+        email,
+        `${process.env.CLIENT_URL}/account/update/${id}/${token}`
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "An email has been sent to your account",
+      });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Email already exists in our system" });
+    }
+  } catch (error) {
+    console.log(error);
+
+    return res.status(404).json({ message: error });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  const { token, accountId } = req.params;
+  const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+  const { email, phone, address } = decoded;
+  // console.log(accountId, token, decoded);
+
+  try {
+    let result = await Account.updateOne(
+      { _id: accountId },
+      { email, phone, address }
+    );
+
+    if (result.matchedCount === 1) {
+      return res.status(200).json({ message: "Account updated successfully" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({ message: error });
+  }
+};
+
 module.exports = {
   handleLogin,
   createUser,
@@ -222,4 +265,5 @@ module.exports = {
   updateProfile,
   deleteProfile,
   verifyCreate,
+  verifyChange,
 };

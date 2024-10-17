@@ -11,6 +11,7 @@ const {
   updateProfile,
   deleteProfile,
   verifyCreate,
+  verifyChange,
 } = require("../controllers/accountController");
 
 router.post("/login", handleLogin);
@@ -27,8 +28,9 @@ router.post("/reset-password/:token", resetPassword);
 
 router.get("/:accountId", viewProfile);
 
-router.put("/:accountId", updateProfile);
+router.put("/update/:accountId", verifyChange);
+router.put("/update/:accountId/:token", updateProfile);
 
-router.delete("/:accountId", deleteProfile);
+router.delete("/delete/:accountId", deleteProfile);
 
 module.exports = router;
