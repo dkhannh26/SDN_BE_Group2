@@ -1,8 +1,12 @@
 const auth = (req, res, next) => {
-  if (req.session && req.session.userId) {
+  const token = req.headers["authorization"];
+
+  if (token) {
     next();
   } else {
-    res.status(401).json({ message: "Please login to continue" });
+    res
+      .status(401)
+      .json({ message: "Please login to continue", isAuthenticated: false });
   }
 };
 

@@ -12,9 +12,11 @@ const {
   deleteProfile,
   verifyCreate,
   verifyChange,
+  checkAuth,
 } = require("../controllers/accountController");
 
 router.post("/login", handleLogin);
+router.post("/check-auth", checkAuth);
 
 router.post("/register", verifyCreate);
 

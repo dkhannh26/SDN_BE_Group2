@@ -25,12 +25,19 @@ const handleLogin = async (req, res) => {
           message: "Username or password is incorrect",
         });
       } else {
-        req.session.userId = username;
+        // req.session.userId = username;
+        const payload = {
+          email: user.email,
+          username: username,
+        };
+        const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: process.env.JWT_EXPIRE,
+        });
 
         return res.status(200).json({
           EC: 0,
           message: "Login successful",
-          user,
+          token: token,
         });
       }
     } else {
@@ -40,6 +47,21 @@ const handleLogin = async (req, res) => {
     console.log(error);
     return res.status(404).json({ message: error });
   }
+};
+
+const checkAuth = async (req, res) => {
+  const token = req?.headers?.authorization?.split(" ")?.[1];
+
+  if (!token) {
+    return res.status(401).json({ isAuthenticated: false });
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ isAuthenticated: false });
+    }
+    return res.json({ isAuthenticated: true, user: user });
+  });
 };
 
 const verifyCreate = async (req, res) => {
@@ -257,6 +279,7 @@ const updateProfile = async (req, res) => {
 
 module.exports = {
   handleLogin,
+  checkAuth,
   createUser,
   handleLogout,
   forgotPassword,

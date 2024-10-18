@@ -9,7 +9,7 @@ const hostname = process.env.HOST_NAME;
 const cors = require("cors");
 var indexRouter = require("./routes/index");
 var accountRouter = require("./routes/accountRouter");
-
+var delay = require("./middleware/delay");
 var app = express();
 
 app.use(
