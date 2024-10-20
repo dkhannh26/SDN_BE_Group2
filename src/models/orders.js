@@ -18,12 +18,6 @@ const schema = new mongoose.Schema(
       ref: "vouchers",
     },
 
-    order_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "order_details",
-      },
-    ],
 
     phone: {
       type: String,

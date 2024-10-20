@@ -1,11 +1,16 @@
 const Orders = require('../models/orders');
 const OrderDetails = require('../models/order_details');
+const pantShirtSizeDetail = require('../models/pant_shirt_size_detail');
 const Accounts = require('../models/accounts');
+const Tshirt = require('../models/tshirts');
+const Pant = require('../models/pants');
+const Shoes = require('../models/shoes');
+const Accessory = require('../models/accessories')
 
 class OrderController {
     getList(req, res, next) {
         Orders.find({})
-            .populate('account_id')
+            // .populate('account_id')
             .then((orders) => {
                 res.status(200).json(orders);
             })
@@ -16,12 +21,23 @@ class OrderController {
     createOrder(req, res, next) {
         Orders.create(req.body)
             .then((order) => {
-                res.status(201).json(order);
+                const orderDetailsData = {
+                    ...req.body,
+                    order_id: order._id
+                };
+                return OrderDetails.create(orderDetailsData);
+            })
+            .then((orderDetails) => {
+                res.status(201).json({
+                    orderDetails,
+                });
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({ error: err.message });
             });
     }
+
     deleteAllOrder(req, res, next) {
         Orders.deleteMany({})
             .then((Orders) => {
@@ -125,19 +141,75 @@ class OrderController {
             });
     }
     getOrderDetails(req, res, next) {
-        OrderDetails.find({ order: req.params.orderId })
-            .populate('order_id', 'total_price', 'phone', 'address', 'status')
-            .populate('pant_shirt_size_detail_id', 'shirt_id', 'pant_id', 'size_id')
-            .populate('shoes_size_detail_id', 'shoes_id', 'size_id')
-            .populate('accessory_id', 'name', 'quantity', 'price')
+        OrderDetails.find({ order_id: req.params.orderId })
             .then((details) => {
                 if (!details) return res.status(404).json({ message: 'order details not found' });
-                res.status(200).json(details);
+                // res.status(200).json(details);
+                const pantShirtSizeDetailPromises = details.map((pantShirt) => {
+                    return pantShirtSizeDetail.findOne({
+                        _id: pantShirt.pant_shirt_size_detail_id,
+                    });
+                });
+                const shoesSizeDetailPromises = details.map((shoes) => {
+                    return Shoes.findOne({
+                        _id: shoes.shoes_size_detail_id,
+                    })
+                })
+                const accessoriesDetailPromises = details.map((accessories) => {
+                    return Accessory.findOne({
+                        _id: accessories.accessory_id,
+                    })
+                })
+                Promise.all([Promise.all(pantShirtSizeDetailPromises), Promise.all(shoesSizeDetailPromises), Promise.all(accessoriesDetailPromises)])
+                    .then(([pantShirtDetails, shoesDetails, accessoriesDetails]) => {
+                        const tshirtPromises = pantShirtDetails.map((pantShirt) => {
+                            return pantShirt ? Tshirt.findOne({ _id: pantShirt.tshirt_id }) : null;
+                        });
+                        const pantPromises = pantShirtDetails.map((pantShirt) => {
+                            return pantShirt ? Pant.findOne({ _id: pantShirt.pant_id }) : null;
+                        });
+                        const shoesPormises = shoesDetails.map((shoes) => {
+                            return shoes ? shoes.findOne({ _id: shoes.shoes_id }) : null;
+                        })
+                        const accessoriesPormises = accessoriesDetails.map((accessories) => {
+                            return accessories ? accessories.findOne({ _id: accessories.accessory_id }) : null;
+                        });
+                        Promise.all([Promise.all(tshirtPromises), Promise.all(pantPromises), Promise.all(shoesPormises), Promise.all(accessoriesPormises)])
+                            .then(([tshirts, pants, shoes, accessories]) => {
+                                const combinedData = details.map((detail, index) => {
+                                    const detailData = detail.toObject();
+                                    return {
+                                        ...detailData,
+                                        pantShirt: pantShirtDetails[index] ? {
+                                            tshirt_id: pantShirtDetails[index].tshirt_id,
+                                            tshirt_name: tshirts[index] ? tshirts[index].name : null,
+                                            tshirt_price: tshirts[index] ? tshirts[index].price : null,
+                                            pant_id: pantShirtDetails[index].pant_id,
+                                            pant_name: pants[index] ? pants[index].name : null,
+                                            pant_price: pants[index] ? pants[index].price : null,
+                                        } : null,
+                                        shoes: shoesDetails[index] ? {
+                                            shoes_id: shoesDetails[index].shoes_id,
+                                            shoes_name: shoes[index] ? shoes[index].name : null,
+                                            shoes_price: shoes[index] ? shoes[index].price : null,
+                                        } : null,
+                                        accessories: accessoriesDetails[index] ? {
+                                            accessories_id: accessoriesDetails[index].accessories_id,
+                                            accessories_name: accessories[index] ? accessories[index].name : null,
+                                            accessories_price: accessories[index] ? accessories[index].price : null,
+                                        } : null,
+                                    };
+                                })
+                                res.status(200).json(combinedData);
+                            })
+
+                    })
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });
             });
     }
+
 }
 
 module.exports = new OrderController;
