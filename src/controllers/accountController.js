@@ -3,6 +3,7 @@ const {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
   sendVerifyCreate,
+  sendChangeEmail,
 } = require("../nodemailer/email");
 const Account = require("../models/accounts");
 const bcrypt = require("bcrypt");
@@ -12,6 +13,9 @@ const crypto = require("crypto");
 const aqp = require("api-query-params");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const Orders = require("../models/orders");
+
 const handleLogin = async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -26,7 +30,10 @@ const handleLogin = async (req, res) => {
         });
       } else {
         // req.session.userId = username;
+        // console.log(user._id);
+
         const payload = {
+          id: user._id,
           email: user.email,
           username: username,
         };
@@ -65,13 +72,15 @@ const checkAuth = async (req, res) => {
 };
 
 const verifyCreate = async (req, res) => {
-  const { email } = req.body;
+  const { email, username } = req.body;
   try {
     const account = await Account.findOne({ email });
-    if (account) {
-      return res
-        .status(200)
-        .json({ success: false, message: "Your email already exist" });
+    const account2 = await Account.findOne({ username });
+    if (account || account2) {
+      return res.status(200).json({
+        success: false,
+        message: "Your email or username already exist",
+      });
     }
 
     const token = jwt.sign(req.body, process.env.ACCESS_TOKEN_SECRET, {
@@ -115,7 +124,7 @@ const createUser = async (req, res) => {
     // await sendWelcomeEmail(email);
     return res
       .status(200)
-      .json({ user: result, message: "User created successfully" });
+      .json({ user: result, message: "Account created successfully", EC: 0 });
   } catch (error) {
     console.log(error);
     return res.status(404).json({ message: error });
@@ -139,8 +148,8 @@ const forgotPassword = async (req, res) => {
 
     if (!account) {
       return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
+        .status(200)
+        .json({ success: false, message: "Your email does not exist" });
     }
 
     const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, {
@@ -150,7 +159,7 @@ const forgotPassword = async (req, res) => {
     // send email
     await sendPasswordResetEmail(
       account.email,
-      `${process.env.CLIENT_URL}/account/reset-password/${token}`
+      `${process.env.CLIENT_URL}/customer/reset-password/${token}`
     );
 
     res.status(200).json({
@@ -174,9 +183,11 @@ const resetPassword = async (req, res) => {
     const account = await Account.findOne({ email });
 
     if (!account) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid or expired reset token" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
+        EC: 1,
+      });
     }
 
     // update password
@@ -189,7 +200,7 @@ const resetPassword = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: true, message: "Password reset successful" });
+      .json({ success: true, message: "Password reset successful", EC: 0 });
   } catch (error) {
     console.log("Error in resetPassword ", error);
     res.status(400).json({ success: false, message: error.message });
@@ -197,10 +208,13 @@ const resetPassword = async (req, res) => {
 };
 
 const viewProfile = async (req, res) => {
-  let id = req.params.accountId;
+  // let id = new mongoose.Types.ObjectId(req.params.accountId);
+  let username = req.params.accountId;
+
   try {
-    const account = await Account.findOne({ _id: id });
-    res.status(200).json({ account });
+    const user = await Account.findOne({ username }).populate("order_id");
+
+    res.status(200).json({ user });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: error });
@@ -219,40 +233,55 @@ const deleteProfile = async (req, res) => {
 };
 
 const verifyChange = async (req, res) => {
-  //làm thêm cái email template dể khi đổi email thì send về đó
+  let username = req.params.accountId;
 
-  let id = req.params.accountId;
   let { email, address, phone } = req.body;
 
   try {
     let check = await Account.findOne({ email });
-    if (!check) {
-      const token = jwt.sign(
-        { email, address, phone },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-          expiresIn: process.env.JWT_EXPIRE,
-        }
-      );
-      // send email
-      await sendVerifyCreate(
-        email,
-        `${process.env.CLIENT_URL}/account/update/${id}/${token}`
+    let user = await Account.findOne({ username });
+
+    if (user.email === email) {
+      let result = await Account.updateOne(
+        { username },
+        { email, phone, address }
       );
 
-      res.status(200).json({
-        success: true,
-        message: "An email has been sent to your account",
-      });
+      if (result.matchedCount === 1) {
+        return res
+          .status(200)
+          .json({ success: true, message: "Account updated successfully" });
+      }
     } else {
-      return res
-        .status(200)
-        .json({ message: "Email already exists in our system" });
+      if (check) {
+        return res.status(200).json({
+          success: false,
+          message: "Email already exists in our system",
+        });
+      } else {
+        const token = jwt.sign(
+          { email, address, phone },
+          process.env.ACCESS_TOKEN_SECRET,
+          {
+            expiresIn: process.env.JWT_EXPIRE,
+          }
+        );
+        // send email
+        await sendChangeEmail(
+          email,
+          `${process.env.CLIENT_URL}/customer/update/${username}/${token}`
+        );
+
+        res.status(200).json({
+          success: true,
+          message: "An email has been sent to your account",
+        });
+      }
     }
   } catch (error) {
     console.log(error);
 
-    return res.status(404).json({ message: error });
+    return res.status(404).json({ success: false, message: error });
   }
 };
 
@@ -264,16 +293,27 @@ const updateProfile = async (req, res) => {
 
   try {
     let result = await Account.updateOne(
-      { _id: accountId },
+      { username: accountId },
       { email, phone, address }
     );
 
     if (result.matchedCount === 1) {
-      return res.status(200).json({ message: "Account updated successfully" });
+      return res
+        .status(200)
+        .json({ EC: 0, message: "Account updated successfully" });
     }
   } catch (error) {
     console.log(error);
-    return res.status(404).json({ message: error });
+    return res.status(404).json({ EC: 1, message: error });
+  }
+};
+
+const createCart = async (req, res) => {
+  try {
+    let order = await Orders.create(req.body);
+    return res.status(200).json({ EC: 0, message: "ok", order });
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -289,4 +329,5 @@ module.exports = {
   deleteProfile,
   verifyCreate,
   verifyChange,
+  createCart,
 };
