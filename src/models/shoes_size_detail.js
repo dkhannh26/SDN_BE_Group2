@@ -26,6 +26,11 @@ const schema = new mongoose.Schema(
         ref: "import_details",
       },
     ],
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
     cart_id: [
       {

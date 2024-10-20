@@ -21,7 +21,11 @@ const schema = new mongoose.Schema(
         ref: "order_details",
       },
     ],
-
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     import_detail_id: [
       {
         type: mongoose.Schema.Types.ObjectId,
