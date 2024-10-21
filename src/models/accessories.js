@@ -23,47 +23,6 @@ const schema = new mongoose.Schema({
     ref: "discounts",
   },
 
-  image_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "images",
-    },
-  ],
-
-  feedback_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "feedback",
-    },
-  ],
-
-  order_detail_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "order_details",
-    },
-  ],
-
-  cart_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "carts",
-    },
-  ],
-
-  import_detail_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "import_details",
-    },
-  ],
-
-  accessory_category_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "accessory_category",
-    },
-  ],
 });
 
 // Override all methods

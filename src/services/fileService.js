@@ -1,11 +1,11 @@
 const path = require("path");
 const Image = require("../models/images");
 const fs = require("fs");
-const uploadMultipleFiles = async (fileArr, data) => {
+const uploadMultipleFiles = async (fileArr, id, type) => {
   try {
     let uploadPath = path.resolve(
       __dirname,
-      "../public/images/upload/" + data._id
+      "../public/images/upload/" + id
     );
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath);
@@ -14,14 +14,33 @@ const uploadMultipleFiles = async (fileArr, data) => {
     let countSuccess = 0;
     for (let i = 0; i < fileArr.length; i++) {
       //get name extension
+      // console.log(fileArr[i])
       let extname = path.extname(fileArr[i].name);
       //get img's name without extension
       // let baseName = path.basename(fileArr[i].name, extname);
 
-      let img = await Image.create({
-        file_extension: extname,
-        tshirt_id: data._id,
-      });
+      if (type === 'shirt') {
+        img = await Image.create({
+          file_extension: extname,
+          tshirt_id: id,
+        });
+      } else if (type === 'pant') {
+        img = await Image.create({
+          file_extension: extname,
+          pant_id: id,
+        });
+      } else if (type === 'shoes') {
+        img = await Image.create({
+          file_extension: extname,
+          shoes_id: id,
+        });
+      } else if (type === 'accessory') {
+        img = await Image.create({
+          file_extension: extname,
+          accessory_id: id,
+        });
+      }
+
       // console.log(img);
 
       //create final path

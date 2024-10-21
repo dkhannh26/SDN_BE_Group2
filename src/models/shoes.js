@@ -6,11 +6,6 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
   price: {
     type: Number,
     required: true,
@@ -19,28 +14,7 @@ const schema = new mongoose.Schema({
   discount_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "discounts",
-  },
-
-  shoes_size_detail_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "shoes_size_detail",
-    },
-  ],
-
-  images_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "images",
-    },
-  ],
-
-  feedback_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "feedbacks",
-    },
-  ],
+  }
 });
 
 // Override all methods

@@ -4,27 +4,32 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 require("dotenv").config();
 const fileUpload = require("express-fileupload");
+var cors = require('cors')
 
 const connection = require("./config/database");
 const hostname = process.env.HOST_NAME;
 
 var indexRouter = require("./routes/index");
-var productRouter = require("./routes/productRouter");
 
 var app = express();
 
 app.use(fileUpload());
 // app.use(logger("dev"));
 
-app.use(cookieParser());
+app.use(cors())
+// app.use(logger("dev"));
 
-var cors = require('cors')
+app.use(express.urlencoded({ extended: false }));
+
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors())
 app.use(express.static(path.join(__dirname, "public")));
+
 app.use("/", indexRouter);
-app.use("/product", productRouter);
+
+
 
 // (async () => {
 //   try {

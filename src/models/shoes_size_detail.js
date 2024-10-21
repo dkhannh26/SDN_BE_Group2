@@ -13,26 +13,9 @@ const schema = new mongoose.Schema(
       ref: "shoes",
     },
 
-    order_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "order_details",
-      },
-    ],
-
-    import_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "import_details",
-      },
-    ],
-
-    cart_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "carts",
-      },
-    ],
+    quantity: {
+      type: Number,
+    }
   },
   {
     timestamps: true, // createdAt, updatedAt
