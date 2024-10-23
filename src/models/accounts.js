@@ -62,6 +62,6 @@ const accountSchema = new mongoose.Schema({
 // Override all methods
 accountSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
-const Account = mongoose.model("account", accountSchema);
+const Account = mongoose.model("accounts", accountSchema);
 
 module.exports = Account;

@@ -29,7 +29,7 @@ class CartController {
                     .then(([images, sizes, tshirts]) => {
                         const combinedData = carts.map((cart, index) => {
                             const cartData = cart.toObject();
-                            delete cartData.pant_shirt_detail_id;
+                            // delete cartData.pant_shirt_detail_id;
                             // delete cartData._id;
                             return {
                                 ...cartData,
