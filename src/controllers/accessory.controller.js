@@ -36,6 +36,99 @@ const getAccessoryList = async (req, res) => {
     }
 };
 
+const getAccessoryListIncrease = async (req, res) => {
+    try {
+        let result = []
+        let accessories = await Accessories.find({ deleted: false });
+
+        for (const accessory of accessories) {
+            let accessoryImg = await Image.find({ accessory_id: accessory._id });
+
+            let { _id, name, price } = accessory;
+            let accessoryDiscount = await Discounts.findById(accessory.discount_id)
+            let imageUrl = `/images/upload/${_id}/${accessoryImg[0]?._id}${accessoryImg[0]?.file_extension}`;
+
+            let item = {
+                accessoryId: _id,
+                accessoryName: name,
+                accessoryPrice: price,
+                accessoryImg: imageUrl,
+                accessoryDiscountPercent: accessoryDiscount?.percent
+            };
+
+            result.push(item);
+        }
+        result.sort((a, b) => {
+            let priceA
+            let priceB
+            if (a.accessoryDiscountPercent) {
+                priceA = a.accessoryPrice - (a.accessoryPrice * a.accessoryDiscountPercent / 100);
+            } else {
+                priceA = a.accessoryPrice
+            }
+
+            if (b.accessoryDiscountPercent) {
+                priceB = b.accessoryPrice - (b.accessoryPrice * b.accessoryDiscountPercent / 100);
+            } else {
+                priceB = b.accessoryPrice
+            }
+            return priceA - priceB
+        });
+
+        return res.status(200).json({ data: result });
+    } catch (error) {
+        console.error(error);
+        res.status(404).json({ error });
+    }
+};
+
+const getAccessoryListDecrease = async (req, res) => {
+    try {
+        let result = []
+        let accessories = await Accessories.find({ deleted: false });
+
+        for (const accessory of accessories) {
+            let accessoryImg = await Image.find({ accessory_id: accessory._id });
+
+            let { _id, name, price } = accessory;
+            let accessoryDiscount = await Discounts.findById(accessory.discount_id)
+            let imageUrl = `/images/upload/${_id}/${accessoryImg[0]?._id}${accessoryImg[0]?.file_extension}`;
+
+            let item = {
+                accessoryId: _id,
+                accessoryName: name,
+                accessoryPrice: price,
+                accessoryImg: imageUrl,
+                accessoryDiscountPercent: accessoryDiscount?.percent
+            };
+
+            result.push(item);
+        }
+        result.sort((a, b) => {
+            let priceA
+            let priceB
+            if (a.accessoryDiscountPercent) {
+                priceA = a.accessoryPrice - (a.accessoryPrice * a.accessoryDiscountPercent / 100);
+            } else {
+                priceA = a.accessoryPrice
+            }
+
+            if (b.accessoryDiscountPercent) {
+                priceB = b.accessoryPrice - (b.accessoryPrice * b.accessoryDiscountPercent / 100);
+            } else {
+                priceB = b.accessoryPrice
+            }
+            return priceB - priceA
+        });
+
+        return res.status(200).json({ data: result });
+    } catch (error) {
+        console.error(error);
+        res.status(404).json({ error });
+    }
+};
+
+
 
 const getAccessory = async (req, res) => {
     const accessory = await Accessories.findById(req.params.id)
@@ -121,4 +214,4 @@ const updateAccessory = async (req, res) => {
     }
 };
 
-module.exports = { getAccessoryList, addAccessory, deleteAccessory, updateAccessory, getAccessory, uploadAccessoryImg };
+module.exports = { getAccessoryList, addAccessory, deleteAccessory, updateAccessory, getAccessory, uploadAccessoryImg, getAccessoryListIncrease, getAccessoryListDecrease };

@@ -37,6 +37,98 @@ const getTshirtList = async (req, res) => {
   }
 };
 
+const getTshirtListIncrease = async (req, res) => {
+  try {
+    let result = []
+    let tshirts = await Tshirt.find({ deleted: false });
+
+
+    for (const tshirt of tshirts) {
+      let tshirtImg = await Image.find({ tshirt_id: tshirt._id });
+
+      let { _id, name, price } = tshirt;
+      let tshirtDiscount = await Discounts.findById(tshirt.discount_id)
+      let imageUrl = `/images/upload/${_id}/${tshirtImg[0]?._id}${tshirtImg[0]?.file_extension}`;
+
+      let item = {
+        tshirtId: _id,
+        tshirtName: name,
+        tshirtPrice: price,
+        tshirtImg: imageUrl,
+        tshirtDiscountPercent: tshirtDiscount?.percent
+      };
+      result.push(item);
+    }
+    result.sort((a, b) => {
+      let priceA
+      let priceB
+      if (a.tshirtDiscountPercent) {
+        priceA = a.tshirtPrice - (a.tshirtPrice * a.tshirtDiscountPercent / 100);
+      } else {
+        priceA = a.tshirtPrice
+      }
+
+      if (b.tshirtDiscountPercent) {
+        priceB = b.tshirtPrice - (b.tshirtPrice * b.tshirtDiscountPercent / 100);
+      } else {
+        priceB = b.tshirtPrice
+      }
+      return priceA - priceB;
+    });
+
+    return res.status(200).json({ data: result });
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ error });
+  }
+};
+
+const getTshirtListDecrease = async (req, res) => {
+  try {
+    let result = []
+    let tshirts = await Tshirt.find({ deleted: false });
+
+
+    for (const tshirt of tshirts) {
+      let tshirtImg = await Image.find({ tshirt_id: tshirt._id });
+
+      let { _id, name, price } = tshirt;
+      let tshirtDiscount = await Discounts.findById(tshirt.discount_id)
+      let imageUrl = `/images/upload/${_id}/${tshirtImg[0]?._id}${tshirtImg[0]?.file_extension}`;
+
+      let item = {
+        tshirtId: _id,
+        tshirtName: name,
+        tshirtPrice: price,
+        tshirtImg: imageUrl,
+        tshirtDiscountPercent: tshirtDiscount?.percent
+      };
+      result.push(item);
+    }
+    result.sort((a, b) => {
+      let priceA
+      let priceB
+      if (a.tshirtDiscountPercent) {
+        priceA = a.tshirtPrice - (a.tshirtPrice * a.tshirtDiscountPercent / 100);
+      } else {
+        priceA = a.tshirtPrice
+      }
+
+      if (b.tshirtDiscountPercent) {
+        priceB = b.tshirtPrice - (b.tshirtPrice * b.tshirtDiscountPercent / 100);
+      } else {
+        priceB = b.tshirtPrice
+      }
+      return priceB - priceA;
+    });
+    return res.status(200).json({ data: result });
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ error });
+  }
+};
+
+
 
 const getTshirt = async (req, res) => {
   const tshirt = await Tshirt.findById(req.params.id)
@@ -150,4 +242,4 @@ const updateTshirt = async (req, res) => {
   }
 };
 
-module.exports = { getTshirtList, addTshirt, deleteTshirt, updateTshirt, getTshirt, uploadTshirtImg };
+module.exports = { getTshirtList, addTshirt, deleteTshirt, updateTshirt, getTshirt, uploadTshirtImg, getTshirtListDecrease, getTshirtListIncrease };

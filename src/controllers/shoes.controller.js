@@ -37,6 +37,97 @@ const getShoesList = async (req, res) => {
     }
 };
 
+const getShoesListIncrease = async (req, res) => {
+    try {
+        let result = []
+        let shoesModel = await Shoes.find({ deleted: false });
+
+        for (const shoes of shoesModel) {
+            let shoesImg = await Image.find({ shoes_id: shoes._id });
+            let { _id, name, price } = shoes;
+            let shoesDiscount = await Discounts.findById(shoes.discount_id)
+            let imageUrl = `/images/upload/${_id}/${shoesImg[0]?._id}${shoesImg[0]?.file_extension}`;
+
+            let item = {
+                shoesId: _id,
+                shoesName: name,
+                shoesPrice: price,
+                shoesImg: imageUrl,
+                shoesDiscountPercent: shoesDiscount?.percent
+            };
+
+            result.push(item);
+        }
+
+        result.sort((a, b) => {
+            let priceA
+            let priceB
+            if (a.shoesDiscountPercent) {
+                priceA = a.shoesPrice - (a.shoesPrice * a.shoesDiscountPercent / 100);
+            } else {
+                priceA = a.shoesPrice
+            }
+
+            if (b.shoesDiscountPercent) {
+                priceB = b.shoesPrice - (b.shoesPrice * b.shoesDiscountPercent / 100);
+            } else {
+                priceB = b.shoesPrice
+            }
+            return priceA - priceB;
+        });
+        return res.status(200).json({ data: result });
+    } catch (error) {
+        console.error(error);
+        res.status(404).json({ error });
+    }
+};
+
+const getShoesListDecrease = async (req, res) => {
+    try {
+        let result = []
+        let shoesModel = await Shoes.find({ deleted: false });
+
+        for (const shoes of shoesModel) {
+            let shoesImg = await Image.find({ shoes_id: shoes._id });
+            let { _id, name, price } = shoes;
+            let shoesDiscount = await Discounts.findById(shoes.discount_id)
+            let imageUrl = `/images/upload/${_id}/${shoesImg[0]?._id}${shoesImg[0]?.file_extension}`;
+
+            let item = {
+                shoesId: _id,
+                shoesName: name,
+                shoesPrice: price,
+                shoesImg: imageUrl,
+                shoesDiscountPercent: shoesDiscount?.percent
+            };
+
+            result.push(item);
+        }
+
+        result.sort((a, b) => {
+            let priceA
+            let priceB
+            if (a.shoesDiscountPercent) {
+                priceA = a.shoesPrice - (a.shoesPrice * a.shoesDiscountPercent / 100);
+            } else {
+                priceA = a.shoesPrice
+            }
+
+            if (b.shoesDiscountPercent) {
+                priceB = b.shoesPrice - (b.shoesPrice * b.shoesDiscountPercent / 100);
+            } else {
+                priceB = b.shoesPrice
+            }
+            return priceB - priceA;
+        });
+        return res.status(200).json({ data: result });
+    } catch (error) {
+        console.error(error);
+        res.status(404).json({ error });
+    }
+};
+
+
 
 const getShoes = async (req, res) => {
 
@@ -152,4 +243,4 @@ const updateShoes = async (req, res) => {
     }
 };
 
-module.exports = { getShoesList, getShoes, addShoes, deleteShoes, updateShoes, uploadShoesImg };
+module.exports = { getShoesList, getShoes, addShoes, deleteShoes, updateShoes, uploadShoesImg, getShoesListDecrease, getShoesListIncrease };
