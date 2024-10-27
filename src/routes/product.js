@@ -44,6 +44,10 @@ var {
   getShoesListDecrease
 } = require("../controllers/shoes.controller");
 
+const { getSearchList } = require("../controllers/product.controller");
+
+router.get('/search/:text', getSearchList)
+
 router.get("/tshirt/increase", getTshirtListIncrease);
 router.get("/tshirt/decrease", getTshirtListDecrease);
 router.get("/tshirt", getTshirtList);
