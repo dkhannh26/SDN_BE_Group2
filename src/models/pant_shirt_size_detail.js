@@ -15,26 +15,11 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "tshirts",
     },
-    order_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "order_details",
-      },
-    ],
-
-    import_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "import_details",
-      },
-    ],
-
-    cart_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "carts",
-      },
-    ],
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    }
   },
   {
     timestamps: true, // createdAt, updatedAt

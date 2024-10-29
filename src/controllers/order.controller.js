@@ -1,6 +1,7 @@
 const Orders = require('../models/orders');
 const OrderDetails = require('../models/order_details');
 const pantShirtSizeDetail = require('../models/pant_shirt_size_detail');
+const shoesSizeDetail = require('../models/shoes_size_detail');
 const Accounts = require('../models/accounts');
 const Tshirt = require('../models/tshirts');
 const Pant = require('../models/pants');
@@ -118,15 +119,72 @@ class OrderController {
             .then((order) => {
                 if (!order) return res.status(404).json({ message: 'order not found' });
                 res.status(200).json(order);
-                setTimeout(() => {
-                    Orders.findByIdAndUpdate(req.params.orderId, { status: 'delivered' }, { new: true })
-                        .then(() => {
-                            console.log('order has been delivered');
-                        })
-                        .catch((err) => {
-                            console.log('Error updating order status to delivered', err);
-                        });
-                }, 60000)
+                let updateData = req.body.updateData;
+                const updatePantShirtQuantity = updateData.pant_shirt_size_detail_id.map((id, index) => {
+                    if (id) {
+                        return pantShirtSizeDetail.findById(id)
+                            .then((pantShirtDetail) => {
+                                if (pantShirtDetail) {
+                                    const newQuantity = pantShirtDetail.quantity - updateData.quantities[index];
+                                    return pantShirtSizeDetail.findByIdAndUpdate(
+                                        id,
+                                        { quantity: newQuantity },
+                                        { new: true }
+                                    );
+                                } else {
+                                    throw new Error(`PantShirtSizeDetail with ID ${id} not found`);
+                                }
+                            });
+                    } else {
+                        return Promise.resolve();
+                    }
+                });
+                const updateShoesQuantity = updateData.shoes_size_detail_id.map((id, index) => {
+                    if (id) {
+                        return shoesSizeDetail.findById(id)
+                            .then((shoesDetail) => {
+                                if (shoesDetail) {
+                                    const newQuantity = shoesDetail.quantity - updateData.quantities[index];
+                                    return shoesSizeDetail.findByIdAndUpdate(
+                                        id,
+                                        { quantity: newQuantity },
+                                        { new: true }
+                                    );
+                                }
+                            })
+                    } else {
+                        return Promise.resolve();
+                    }
+                });
+                const updateAccessoryQuantity = updateData.accessory_id.map((id, index) => {
+                    if (id) {
+                        return Accessory.findById(id)
+                            .then((accessory) => {
+                                if (accessory) {
+                                    const newQuantity = accessory.quantity - updateData.quantities[index];
+                                    return Accessory.findByIdAndUpdate(
+                                        id,
+                                        { quantity: newQuantity },
+                                        { new: true }
+                                    );
+                                }
+                            })
+                    } else {
+                        Promise.resolve();
+                    }
+                });
+                Promise.all([updatePantShirtQuantity, updateShoesQuantity, updateAccessoryQuantity])
+                    .then(() => {
+                        setTimeout(() => {
+                            Orders.findByIdAndUpdate(req.params.orderId, { status: 'delivered' }, { new: true })
+                                .then(() => {
+                                    console.log('order has been delivered');
+                                })
+                                .catch((err) => {
+                                    console.log('Error updating order status to delivered', err);
+                                });
+                        }, 60000)
+                    })
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });
@@ -145,68 +203,52 @@ class OrderController {
     }
     getOrderDetails(req, res, next) {
         OrderDetails.find({ order_id: req.params.orderId })
+            .populate('pant_shirt_size_detail_id')
+            .populate('shoes_size_detail_id')
+            .populate('accessory_id')
             .then((details) => {
-                if (!details) return res.status(404).json({ message: 'order details not found' });
-                // res.status(200).json(details);
-                const pantShirtSizeDetailPromises = details.map((pantShirt) => {
-                    return pantShirtSizeDetail.findOne({
-                        _id: pantShirt.pant_shirt_size_detail_id,
-                    });
-                });
-                const shoesSizeDetailPromises = details.map((shoes) => {
-                    return Shoes.findOne({
-                        _id: shoes.shoes_size_detail_id,
-                    })
-                })
-                const accessoriesDetailPromises = details.map((accessories) => {
-                    return Accessory.findOne({
-                        _id: accessories.accessory_id,
-                    })
-                })
-                Promise.all([Promise.all(pantShirtSizeDetailPromises), Promise.all(shoesSizeDetailPromises), Promise.all(accessoriesDetailPromises)])
-                    .then(([pantShirtDetails, shoesDetails, accessoriesDetails]) => {
-                        const tshirtPromises = pantShirtDetails.map((pantShirt) => {
-                            return pantShirt ? Tshirt.findOne({ _id: pantShirt.tshirt_id }) : null;
-                        });
-                        const pantPromises = pantShirtDetails.map((pantShirt) => {
-                            return pantShirt ? Pant.findOne({ _id: pantShirt.pant_id }) : null;
-                        });
-                        const shoesPormises = shoesDetails.map((shoes) => {
-                            return shoes ? shoes.findOne({ _id: shoes.shoes_id }) : null;
-                        })
-                        const accessoriesPormises = accessoriesDetails.map((accessories) => {
-                            return accessories ? accessories.findOne({ _id: accessories.accessory_id }) : null;
-                        });
-                        Promise.all([Promise.all(tshirtPromises), Promise.all(pantPromises), Promise.all(shoesPormises), Promise.all(accessoriesPormises)])
-                            .then(([tshirts, pants, shoes, accessories]) => {
-                                const combinedData = details.map((detail, index) => {
-                                    const detailData = detail.toObject();
-                                    return {
-                                        ...detailData,
-                                        pantShirt: pantShirtDetails[index] ? {
-                                            tshirt_id: pantShirtDetails[index].tshirt_id,
-                                            tshirt_name: tshirts[index] ? tshirts[index].name : null,
-                                            tshirt_price: tshirts[index] ? tshirts[index].price : null,
-                                            pant_id: pantShirtDetails[index].pant_id,
-                                            pant_name: pants[index] ? pants[index].name : null,
-                                            pant_price: pants[index] ? pants[index].price : null,
-                                        } : null,
-                                        shoes: shoesDetails[index] ? {
-                                            shoes_id: shoesDetails[index].shoes_id,
-                                            shoes_name: shoes[index] ? shoes[index].name : null,
-                                            shoes_price: shoes[index] ? shoes[index].price : null,
-                                        } : null,
-                                        accessories: accessoriesDetails[index] ? {
-                                            accessories_id: accessoriesDetails[index].accessories_id,
-                                            accessories_name: accessories[index] ? accessories[index].name : null,
-                                            accessories_price: accessories[index] ? accessories[index].price : null,
-                                        } : null,
-                                    };
-                                })
-                                res.status(200).json(combinedData);
-                            })
+                if (!details.length) return res.status(404).json({ message: 'Order details not found' });
 
+                const shirtPromises = details.map((product) =>
+                    Tshirt.findOne({ _id: product.pant_shirt_size_detail_id?.tshirt_id })
+                );
+                const pantPromises = details.map((product) =>
+                    Pant.findOne({ _id: product.pant_shirt_size_detail_id?.pant_id })
+                );
+                const shoesPromises = details.map((shoes) =>
+                    Shoes.findOne({ _id: shoes.shoes_size_detail_id?.shoes_id })
+                );
+                const accessoriesPromises = details.map((accessories) =>
+                    Accessory.findOne({ _id: accessories.accessory_id })
+                );
+
+                Promise.all([
+                    Promise.all(shirtPromises),
+                    Promise.all(pantPromises),
+                    Promise.all(shoesPromises),
+                    Promise.all(accessoriesPromises)
+                ])
+                    .then(([shirts, pants, shoes, accessories]) => {
+                        const combinedData = details.map((detail, index) => {
+                            const detailData = detail.toObject();
+
+                            const productData = shirts[index] || pants[index] || shoes[index] || accessories[index];
+
+                            return {
+                                ...detailData,
+                                product: productData ? {
+                                    id: productData._id,
+                                    name: productData.name,
+                                    price: productData.price,
+                                } : null,
+                            };
+                        });
+
+                        res.status(200).json(combinedData);
                     })
+                    .catch((err) => {
+                        res.status(500).json({ error: err.message });
+                    });
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });

@@ -20,27 +20,6 @@ const schema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "discounts",
   },
-
-  pant_shirt_size_detail_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "pant_shirt_size_detail",
-    },
-  ],
-
-  feedback_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "feedbacks",
-    },
-  ],
-
-  images_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "images",
-    },
-  ],
 });
 
 // Override all methods
