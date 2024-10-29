@@ -134,14 +134,31 @@ class CartController {
                 res.status(500).json({ error: err.message });
             });
     }
-    deleteAllCart(req, res, next) {
-        Cart.deleteMany({})
-            .then((carts) => {
-                res.status(200).json(carts);
+    deleteAllCartByAccountId(req, res, next) {
+        const { account_id } = req.body;
+
+        Account.findById(account_id)
+            .populate('cart_id')
+            .then((account) => {
+                if (!account || !account.cart_id.length) {
+                    return res.status(404).json({ message: 'No carts found for this account' });
+                }
+
+                const cartIds = account.cart_id.map(cart => cart._id);
+                Cart.deleteMany({ _id: { $in: cartIds } })
+                    .then((result) => {
+                        res.status(200).json({
+                            message: `${result.deletedCount} carts deleted successfully for account ${account_id}`,
+                            deletedCarts: cartIds,
+                        });
+                    })
+                    .catch((err) => {
+                        res.status(500).json({ error: err.message });
+                    });
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });
-            });
+            })
     }
     getCartById(req, res, next) {
         Cart.findById(req.params.cartId)
@@ -217,9 +234,8 @@ class CartController {
             });
     }
     getCartByAccountId(req, res, next) {
-        const { account_id } = req.query;
+        const { account_id } = req.body;
 
-        // Tìm `account` để lấy danh sách `cart_id`
         Account.findById(account_id)
             .populate('cart_id')
             .then((account) => {
@@ -227,16 +243,14 @@ class CartController {
                     return res.status(404).json({ message: 'No carts found for this account' });
                 }
 
-                const cartIds = account.cart_id.map(cart => cart._id); // Lấy danh sách `cart_id`
+                const cartIds = account.cart_id.map(cart => cart._id);
 
-                // Tìm các `Cart` dựa trên danh sách `cart_id` này
                 Cart.find({ _id: { $in: cartIds } })
                     .select('pant_shirt_size_detail_id shoes_size_detail_id accessory_id quantity')
                     .populate('pant_shirt_size_detail_id')
                     .populate('shoes_size_detail_id')
                     .populate('accessory_id')
                     .then((carts) => {
-                        // Phần code xử lý promises và tạo `combinedData` giữ nguyên
                         const shirtImagesPromises = carts.map((cart) => {
                             return cart.pant_shirt_size_detail_id
                                 ? Image.findOne({ tshirt_id: cart.pant_shirt_size_detail_id.tshirt_id })

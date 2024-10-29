@@ -6,6 +6,7 @@ class PaymentController {
         process.env.TZ = 'Asia/Ho_Chi_Minh';
         let order = req.body.amount;
         let address = req.body.address;
+        console.log(address);
         let phone = req.body.phone;
         let date = new Date();
         let createDate = moment(date).format('YYYYMMDDHHmmss');
@@ -39,7 +40,7 @@ class PaymentController {
         vnp_Params['vnp_TxnRef'] = orderId;
         vnp_Params['vnp_OrderInfo'] = `${phone},, ${address}`;
         vnp_Params['vnp_OrderType'] = 'other';
-        vnp_Params['vnp_Amount'] = amount * 100;
+        vnp_Params['vnp_Amount'] = amount * 1;
         vnp_Params['vnp_ReturnUrl'] = returnUrl;
         vnp_Params['vnp_IpAddr'] = ipAddr;
         vnp_Params['vnp_CreateDate'] = createDate;
