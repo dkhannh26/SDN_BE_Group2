@@ -7,7 +7,6 @@ const schema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     accessory_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "accessories",

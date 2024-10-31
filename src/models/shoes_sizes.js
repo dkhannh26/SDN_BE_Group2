@@ -3,10 +3,9 @@ const mongoose_delete = require("mongoose-delete");
 
 const sizeSchema = new mongoose.Schema({
   size_name: {
-    type: String,
+    type: Number,
     required: true,
   },
-
 });
 
 // Override all methods

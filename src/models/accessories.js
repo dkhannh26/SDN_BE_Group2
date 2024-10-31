@@ -22,6 +22,7 @@ const schema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "discounts",
   },
+
 });
 
 // Override all methods
