@@ -7,10 +7,14 @@ const { uploadMultipleFiles } = require("../services/fileService");
 const mongoose = require('mongoose');
 const Images = require("../models/images");
 
+const currentTimeInMillis = Date.now();
+const currentDate = new Date(currentTimeInMillis);
+
 const getAccessoryList = async (req, res) => {
     try {
         let result = []
         let accessories = await Accessories.find({ deleted: false });
+
 
         for (const accessory of accessories) {
             let accessoryImg = await Image.find({ accessory_id: accessory._id });
@@ -24,7 +28,8 @@ const getAccessoryList = async (req, res) => {
                 accessoryName: name,
                 accessoryPrice: price,
                 accessoryImg: imageUrl,
-                accessoryDiscountPercent: accessoryDiscount?.percent
+                accessoryDiscountPercent:
+                    accessoryDiscount?.expired_at > currentDate ? accessoryDiscount?.percent : null
             };
 
             result.push(item);
@@ -48,13 +53,17 @@ const getAccessoryListIncrease = async (req, res) => {
             let accessoryDiscount = await Discounts.findById(accessory.discount_id)
             let imageUrl = `/images/upload/${_id}/${accessoryImg[0]?._id}${accessoryImg[0]?.file_extension}`;
 
+
             let item = {
                 accessoryId: _id,
                 accessoryName: name,
                 accessoryPrice: price,
                 accessoryImg: imageUrl,
-                accessoryDiscountPercent: accessoryDiscount?.percent
+                accessoryDiscountPercent:
+                    accessoryDiscount?.expired_at > currentDate ? accessoryDiscount?.percent : null
             };
+
+
 
             result.push(item);
         }
@@ -99,7 +108,8 @@ const getAccessoryListDecrease = async (req, res) => {
                 accessoryName: name,
                 accessoryPrice: price,
                 accessoryImg: imageUrl,
-                accessoryDiscountPercent: accessoryDiscount?.percent
+                accessoryDiscountPercent:
+                    accessoryDiscount?.expired_at > currentDate ? accessoryDiscount?.percent : null
             };
 
             result.push(item);
@@ -151,10 +161,14 @@ const getAccessory = async (req, res) => {
     const result = {
         name: name,
         price: price,
-        discount: {
-            discount_id: discount?._id,
-            percent: discount?.percent
-        },
+        discount: discount?.expired_at > currentDate ?
+            {
+                discount_id: discount?._id,
+                percent: discount?.percent
+            }
+            :
+            null
+        ,
         quantity: quantity,
         images: imagesResult
     }

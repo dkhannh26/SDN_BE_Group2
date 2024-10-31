@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 // const port = process.env.PORT || 8080;
+require("dotenv").config();
 const connection = require("../config/database");
 var app = require("../app");
 var debug = require("debug")("back-end:server");

@@ -6,7 +6,8 @@ const Discounts = require("../models/discounts")
 const { uploadMultipleFiles } = require("../services/fileService");
 const mongoose = require('mongoose');
 const Images = require("../models/images");
-
+const currentTimeInMillis = Date.now();
+const currentDate = new Date(currentTimeInMillis);
 const getTshirtList = async (req, res) => {
   try {
     let result = []
@@ -25,7 +26,8 @@ const getTshirtList = async (req, res) => {
         tshirtName: name,
         tshirtPrice: price,
         tshirtImg: imageUrl,
-        tshirtDiscountPercent: tshirtDiscount?.percent
+        tshirtDiscountPercent:
+          tshirtDiscount?.expired_at > currentDate ? tshirtDiscount?.percent : null
       };
 
       result.push(item);
@@ -55,7 +57,8 @@ const getTshirtListIncrease = async (req, res) => {
         tshirtName: name,
         tshirtPrice: price,
         tshirtImg: imageUrl,
-        tshirtDiscountPercent: tshirtDiscount?.percent
+        tshirtDiscountPercent:
+          tshirtDiscount?.expired_at > currentDate ? tshirtDiscount?.percent : null
       };
       result.push(item);
     }
@@ -101,7 +104,8 @@ const getTshirtListDecrease = async (req, res) => {
         tshirtName: name,
         tshirtPrice: price,
         tshirtImg: imageUrl,
-        tshirtDiscountPercent: tshirtDiscount?.percent
+        tshirtDiscountPercent:
+          tshirtDiscount?.expired_at > currentDate ? tshirtDiscount?.percent : null
       };
       result.push(item);
     }
@@ -164,10 +168,10 @@ const getTshirt = async (req, res) => {
   const result = {
     name: name,
     price: price,
-    discount: {
+    discount: discount?.expired_at > currentDate ? {
       discount_id: discount?._id,
       percent: discount?.percent
-    },
+    } : null,
     size: sizeResult,
     images: imagesResult
   }

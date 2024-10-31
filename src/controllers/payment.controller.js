@@ -8,6 +8,7 @@ class PaymentController {
         let address = req.body.address;
         console.log(address);
         let phone = req.body.phone;
+        let account_id = req.body.account_id;
         let date = new Date();
         let createDate = moment(date).format('YYYYMMDDHHmmss');
 
@@ -38,9 +39,9 @@ class PaymentController {
         vnp_Params['vnp_Locale'] = locale;
         vnp_Params['vnp_CurrCode'] = currCode;
         vnp_Params['vnp_TxnRef'] = orderId;
-        vnp_Params['vnp_OrderInfo'] = `${phone},, ${address}`;
+        vnp_Params['vnp_OrderInfo'] = `${phone},, ${address},, ${account_id}`;
         vnp_Params['vnp_OrderType'] = 'other';
-        vnp_Params['vnp_Amount'] = amount * 1;
+        vnp_Params['vnp_Amount'] = amount * 1000;
         vnp_Params['vnp_ReturnUrl'] = returnUrl;
         vnp_Params['vnp_IpAddr'] = ipAddr;
         vnp_Params['vnp_CreateDate'] = createDate;
@@ -86,9 +87,10 @@ class PaymentController {
             let orderParts = orderInfo.split('%2C%2C+');
             let phone = orderParts[0];
             let address = orderParts[1];
+            let account_id = orderParts[2];
             let orderId = vnp_Params['vnp_TxnRef'];
             let rspCode = vnp_Params['vnp_ResponseCode'];
-            const redirectUrl = `http://localhost:3001/customer/payment?type=${type}&voucherTotal=${voucherTotal}&address=${address}&phone=${phone}`;
+            const redirectUrl = `http://localhost:3001/customer/payment?type=${type}&voucherTotal=${voucherTotal}&address=${address}&phone=${phone}&phone=${account_id}`;
             res.redirect(redirectUrl);
 
         }

@@ -111,8 +111,10 @@ class OrderController {
     //         });
     // }
     getListDone(req, res, next) {
+        const { accountId } = req.params;
+        console.log(accountId);
         Orders.find({
-            // accountId: req.params.accountId, 
+            account_id: accountId,
             status: { $in: ['shipped', 'cancelled'] }
         })
             .then((orders) => {
@@ -121,8 +123,10 @@ class OrderController {
             })
     }
     getListPending(req, res, next) {
+        const { accountId } = req.params;
+        console.log(accountId);
         Orders.find({
-            // accountId: req.params.accountId, 
+            account_id: accountId,
             status: { $in: ['delivered', 'processing', 'pending'] }
         })
             .then((orders) => {

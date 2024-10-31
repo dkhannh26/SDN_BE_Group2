@@ -5,10 +5,12 @@ const accountSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
+    unique: true,
   },
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   password: {
     type: String,
@@ -29,34 +31,6 @@ const accountSchema = new mongoose.Schema({
     enum: ["user", "staff", "admin"],
     default: "user",
   },
-
-  cart_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "carts",
-    },
-  ],
-
-  import_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "imports",
-    },
-  ],
-
-  feedback_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "feedbacks",
-    },
-  ],
-
-  order_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "orders",
-    },
-  ],
 });
 
 // Override all methods
