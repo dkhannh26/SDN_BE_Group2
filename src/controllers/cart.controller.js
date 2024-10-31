@@ -93,15 +93,15 @@ class CartController {
                                     }
                                     : null,
                                 product: {
-                                    name: shirtPromises[index]?.name || shoesPromises[index]?.name || pantPromises[index]?.name || cart.accessory_id.name || null,
+                                    name: shirtPromises[index]?.name || shoesPromises[index]?.name || pantPromises[index]?.name || cart.accessory_id?.name || null,
                                     price:
-                                        shirtPromises[index] ? shirtPromises[index].price :
-                                            shoesPromises[index] ? shoesPromises[index].price :
-                                                pantPromises[index] ? pantPromises[index].price :
-                                                    cart.accessory_id ? cart.accessory_id.price :
-                                                        null,
+                                        shirtPromises[index]?.price ||
+                                        shoesPromises[index]?.price ||
+                                        pantPromises[index]?.price ||
+                                        cart.accessory_id?.price ||
+                                        null,
                                     quantity: cart.pant_shirt_size_detail_id
-                                        ? (cart.pant_shirt_size_detail_id.quantity)
+                                        ? cart.pant_shirt_size_detail_id.quantity
                                         : (cart.shoes_size_detail_id
                                             ? cart.shoes_size_detail_id.quantity
                                             : (cart.accessory_id ? cart.accessory_id.quantity : null)),
@@ -129,6 +129,28 @@ class CartController {
         Cart.create(req.body)
             .then((cart) => {
                 res.status(201).json(cart);
+            })
+            .catch((err) => {
+                res.status(500).json({ error: err.message });
+            });
+    }
+    getProductSizeDetails(req, res, next) {
+        const { cartId } = req.params;
+
+        const tshirtPromise = TshirtPantDetail.find({ tshirt_id: cartId });
+        const pantPromise = TshirtPantDetail.find({ pant_id: cartId });
+        const shoesPromise = ShoesDetail.find({ shoes_id: cartId });
+        const accessoryPromise = Accessories.find({ _id: cartId });
+
+        Promise.all([tshirtPromise, pantPromise, shoesPromise, accessoryPromise])
+            .then(([tshirts, pants, shoes, accessories]) => {
+                const productDetails = {
+                    tshirts,
+                    pants,
+                    shoes,
+                    accessories
+                };
+                res.status(200).json(productDetails);
             })
             .catch((err) => {
                 res.status(500).json({ error: err.message });

@@ -3,6 +3,10 @@ const mongoose_delete = require("mongoose-delete");
 
 const schema = new mongoose.Schema(
   {
+    account_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "accounts",
+    },
     accessory_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "accessories",
