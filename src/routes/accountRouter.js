@@ -1,6 +1,5 @@
 var express = require("express");
 var router = express.Router();
-const Account = require("../models/accounts");
 const {
   handleLogin,
   createUser,

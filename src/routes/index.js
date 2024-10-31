@@ -8,6 +8,7 @@ const sizeRouter = require("./size");
 const voucherRouter = require("./voucher");
 const statisticRouter = require("./statistic");
 var accountRouter = require("./accountRouter");
+var adminRouter = require("./adminRouter");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -21,9 +22,11 @@ router.use("/statistic", statisticRouter);
 router.use("/account", accountRouter);
 
 router.use("/voucher", voucherRouter);
+router.use("/admin", adminRouter);
 
 /* GET home page. */
 // router.get('/', function(req, res, next) {
 //   res.render('index', { title: 'Express' });
 // });
+
 module.exports = router;
