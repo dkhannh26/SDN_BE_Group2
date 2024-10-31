@@ -8,20 +8,16 @@ const schema = new mongoose.Schema(
       ref: "accounts",
     },
 
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
     status: {
       type: String,
       enum: ["pending", "processing", "completed"],
+      default: "pending",
     },
 
     import_detail_id: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "import_details",
+        ref: "import_detail",
       },
     ],
   },

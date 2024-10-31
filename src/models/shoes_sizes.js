@@ -6,12 +6,6 @@ const sizeSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  shoes_size_detail_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "shoes_size_detail",
-    },
-  ],
 });
 
 // Override all methods
