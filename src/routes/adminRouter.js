@@ -7,6 +7,7 @@ const {
   getAccount,
   accountRecovery,
   permanentlyDelete,
+  handleLogin,
 } = require("../controllers/adminController");
 var router = express.Router();
 
@@ -23,5 +24,7 @@ router.get("/account/:accountId", getAccount);
 router.post("/account/recovery/:accountId", accountRecovery);
 
 router.delete("/account/permanentlyDelete/:accountId", permanentlyDelete);
+
+router.post("/login", handleLogin);
 
 module.exports = router;

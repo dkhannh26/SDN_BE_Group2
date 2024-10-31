@@ -2,6 +2,7 @@ require("dotenv").config();
 const Account = require("../models/accounts");
 const saltRounds = 10;
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const getAccountList = async (req, res) => {
   try {
@@ -139,6 +140,53 @@ const permanentlyDelete = async (req, res) => {
   }
 };
 
+const handleLogin = async (req, res, next) => {
+  let { username, password } = req.body;
+  try {
+    const user = await Account.findOne({ username });
+
+    if (user) {
+      if (["admin", "staff"].includes(user.role)) {
+        const isMatchPassword = await bcrypt.compare(password, user.password);
+        if (!isMatchPassword) {
+          return res.status(403).json({
+            EC: 1,
+            message: "Username or password is incorrect",
+          });
+        } else {
+          const payload = {
+            id: user._id,
+            email: user.email,
+            username: username,
+            role: user.role,
+          };
+          const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: process.env.JWT_EXPIRE,
+          });
+
+          return res.status(200).json({
+            EC: 0,
+            message: "Login successful",
+            token: token,
+            role: user.role,
+          });
+        }
+      } else {
+        const error = new Error(
+          "You are not authorized to perform this operation!"
+        );
+        error.status = 403;
+        next(error);
+      }
+    } else {
+      return res.status(403).json({ EC: 1, message: "Account does not exist" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({ message: error });
+  }
+};
+
 module.exports = {
   getAccountList,
   createStaffAccount,
@@ -147,4 +195,5 @@ module.exports = {
   getAccount,
   accountRecovery,
   permanentlyDelete,
+  handleLogin,
 };

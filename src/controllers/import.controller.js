@@ -78,7 +78,7 @@ const Shoes_size_detail = require("../models/shoes_size_detail");
 
 const createImportDetail = async (req, res) => {
   const { pant, tshirt, shoes, accessory } = req.body;
-  // console.log(pant, tshirt, shoes, accessory);
+  console.log(pant, tshirt, shoes, accessory);
 
   try {
     let i = await Imports.create({ import_detail_id: [] });
@@ -93,7 +93,7 @@ const createImportDetail = async (req, res) => {
             [idField]: item._id,
             quantity: e.quantity,
           });
-          ids.push(result._id); // Collect each Import_detail ID
+          ids.push(result._id);
         }
       }
 
@@ -235,6 +235,8 @@ const getDetailImport = async (req, res) => {
           _id: detailItem.pant_id,
         });
         let product = await Pants.findOne({ _id: detail.pant_id });
+        console.log(product);
+
         let size = await Pant_shirt_sizes.findOne({ _id: detail.size_id });
         return {
           name: product.name,

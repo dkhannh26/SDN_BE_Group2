@@ -7,13 +7,8 @@ const {
 } = require("../nodemailer/email");
 const Account = require("../models/accounts");
 const bcrypt = require("bcrypt");
-const Joi = require("joi");
-const session = require("express-session");
-const crypto = require("crypto");
-const aqp = require("api-query-params");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 const Orders = require("../models/orders");
 
 const handleLogin = async (req, res) => {
@@ -36,7 +31,6 @@ const handleLogin = async (req, res) => {
           id: user._id,
           email: user.email,
           username: username,
-
         };
         const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
           expiresIn: process.env.JWT_EXPIRE,
@@ -46,7 +40,7 @@ const handleLogin = async (req, res) => {
           EC: 0,
           message: "Login successful",
           token: token,
-          role: user.role
+          role: user.role,
         });
       }
     } else {
