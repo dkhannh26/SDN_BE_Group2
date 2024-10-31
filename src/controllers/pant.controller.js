@@ -6,7 +6,8 @@ const Discounts = require("../models/discounts")
 const { uploadMultipleFiles } = require("../services/fileService");
 const mongoose = require('mongoose');
 const Images = require("../models/images");
-
+const currentTimeInMillis = Date.now();
+const currentDate = new Date(currentTimeInMillis);
 const getPantList = async (req, res, next) => {
     try {
         let result = []
@@ -25,7 +26,8 @@ const getPantList = async (req, res, next) => {
                 pantName: name,
                 pantPrice: price,
                 pantImg: imageUrl,
-                pantDiscountPercent: pantDiscount?.percent
+                pantDiscountPercent:
+                    pantDiscount?.expired_at > currentDate ? pantDiscount?.percent : null
             };
 
             result.push(item);
@@ -56,7 +58,8 @@ const getPantListIncrease = async (req, res, next) => {
                 pantName: name,
                 pantPrice: price,
                 pantImg: imageUrl,
-                pantDiscountPercent: pantDiscount?.percent
+                pantDiscountPercent:
+                    pantDiscount?.expired_at > currentDate ? pantDiscount?.percent : null
             };
 
             result.push(item);
@@ -105,7 +108,8 @@ const getPantListDecrease = async (req, res, next) => {
                 pantName: name,
                 pantPrice: price,
                 pantImg: imageUrl,
-                pantDiscountPercent: pantDiscount?.percent
+                pantDiscountPercent:
+                    pantDiscount?.expired_at > currentDate ? pantDiscount?.percent : null
             };
 
             result.push(item);
@@ -171,10 +175,12 @@ const getPant = async (req, res, next) => {
             const result = {
                 name: name,
                 price: price,
-                discount: {
-                    discount_id: discount?._id,
-                    percent: discount?.percent
-                },
+                discount:
+                    discount?.expired_at > currentDate ? {
+                        discount_id: discount?._id,
+                        percent: discount?.percent
+                    } : null
+                ,
                 size: sizeResult,
                 images: imagesResult
             }

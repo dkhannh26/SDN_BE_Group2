@@ -8,7 +8,8 @@ const mongoose = require('mongoose');
 const Images = require("../models/images");
 const Shoes_sizes = require("../models/shoes_sizes");
 const Shoes_size_detail = require("../models/shoes_size_detail");
-
+const currentTimeInMillis = Date.now();
+const currentDate = new Date(currentTimeInMillis);
 const getShoesList = async (req, res) => {
     try {
         let result = []
@@ -25,7 +26,8 @@ const getShoesList = async (req, res) => {
                 shoesName: name,
                 shoesPrice: price,
                 shoesImg: imageUrl,
-                shoesDiscountPercent: shoesDiscount?.percent
+                shoesDiscountPercent:
+                    shoesDiscount?.expired_at > currentDate ? shoesDiscount?.percent : null
             };
 
             result.push(item);
@@ -53,7 +55,8 @@ const getShoesListIncrease = async (req, res) => {
                 shoesName: name,
                 shoesPrice: price,
                 shoesImg: imageUrl,
-                shoesDiscountPercent: shoesDiscount?.percent
+                shoesDiscountPercent:
+                    shoesDiscount?.expired_at > currentDate ? shoesDiscount?.percent : null
             };
 
             result.push(item);
@@ -98,7 +101,8 @@ const getShoesListDecrease = async (req, res) => {
                 shoesName: name,
                 shoesPrice: price,
                 shoesImg: imageUrl,
-                shoesDiscountPercent: shoesDiscount?.percent
+                shoesDiscountPercent:
+                    shoesDiscount?.expired_at > currentDate ? shoesDiscount?.percent : null
             };
 
             result.push(item);
@@ -164,10 +168,12 @@ const getShoes = async (req, res) => {
     const result = {
         name: name,
         price: price,
-        discount: {
-            discount_id: discount?._id,
-            percent: discount?.percent
-        },
+        discount:
+            discount?.expired_at > currentDate ? {
+                discount_id: discount?._id,
+                percent: discount?.percent
+            } : null
+        ,
         size: sizeResult,
         images: imagesResult
     }
