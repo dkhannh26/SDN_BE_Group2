@@ -149,7 +149,8 @@ const getShoes = async (req, res) => {
         const size = await Shoes_sizes.findOne({ _id: item.size_id });
         console.log(size)
         sizeResult.push({
-            [size.size_name]: item.quantity
+            [size.size_name]: item.quantity,
+            [size.id]: item._id
         });
     }
 
@@ -193,6 +194,9 @@ const addShoes = async (req, res) => {
         if (size) {
             for (let key in size) {
                 const sizeModel = await Shoes_sizes.findOne({ size_name: key })
+                console.log(sizeModel);
+                console.log(shoesModel);
+
                 Shoes_size_detail.create({ shoes_id: shoesModel._id, size_id: sizeModel._id, quantity: size[key] })
             }
         }

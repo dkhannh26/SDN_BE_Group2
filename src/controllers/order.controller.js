@@ -10,6 +10,7 @@ const Tshirt = require('../models/tshirts');
 const Pant = require('../models/pants');
 const Shoes = require('../models/shoes');
 const Accessory = require('../models/accessories')
+const Discounts = require('../models/discounts')
 
 class OrderController {
     getList(req, res, next) {
@@ -115,7 +116,7 @@ class OrderController {
         console.log(accountId);
         Orders.find({
             account_id: accountId,
-            status: { $in: ['shipped', 'cancelled'] }
+            status: { $in: ['delivered', 'cancelled'] }
         })
             .then((orders) => {
                 if (!orders) return res.status(404).json({ message: 'orders not found' });
@@ -127,7 +128,7 @@ class OrderController {
         console.log(accountId);
         Orders.find({
             account_id: accountId,
-            status: { $in: ['delivered', 'processing', 'pending'] }
+            status: { $in: ['processing', 'pending'] }
         })
             .then((orders) => {
                 if (!orders) return res.status(404).json({ message: 'orders not found' });
@@ -392,7 +393,38 @@ class OrderController {
                 const shoesSizePromises = details.map((shoes) =>
                     ShoesSize.findOne({ _id: shoes.shoes_size_detail_id?.size_id })
                 );
+                const discountPromises = details.map(async (cart) => {
+                    let discountId = null;
 
+                    if (cart.pant_shirt_size_detail_id) {
+                        const pantShirtDetail = cart.pant_shirt_size_detail_id;
+                        console.log(pantShirtDetail);
+
+                        if (pantShirtDetail.tshirt_id) {
+                            const tshirt = await Tshirt.findById(pantShirtDetail.tshirt_id);
+                            discountId = tshirt?.discount_id;
+                            console.log(tshirt);
+                        }
+                        if (!discountId && pantShirtDetail.pant_id) {
+                            const pant = await Pant.findById(pantShirtDetail.pant_id);
+                            discountId = pant?.discount_id;
+
+                        }
+                    }
+
+                    if (!discountId && cart.shoes_size_detail_id) {
+                        const shoesDetail = cart.shoes_size_detail_id;
+                        const shoes = await Shoes.findById(shoesDetail.shoes_id);
+                        discountId = shoes?.discount_id;
+                    }
+
+                    if (!discountId && cart.accessory_id) {
+                        const accessory = await Accessory.findById(cart.accessory_id);
+                        discountId = accessory?.discount_id;
+                    }
+
+                    return discountId ? Discounts.findById(discountId) : null;
+                });
                 Promise.all([
                     Promise.all(shirtPromises),
                     Promise.all(pantPromises),
@@ -402,14 +434,16 @@ class OrderController {
                     Promise.all(shirtSizePromises),
                     Promise.all(pantSizePromises),
                     Promise.all(shoesSizePromises),
+                    Promise.all(discountPromises)
                 ])
-                    .then(([shirts, pants, shoes, accessories, images, shirtSizes, pantSizes, shoesSizes]) => {
+                    .then(([shirts, pants, shoes, accessories, images, shirtSizes, pantSizes, shoesSizes, discountResults]) => {
                         const combinedData = details.map((detail, index) => {
                             const detailData = detail.toObject();
 
                             const productData = shirts[index] || pants[index] || shoes[index] || accessories[index];
                             const productImage = images[index];
                             const sizeData = shirtSizes[index] || pantSizes[index] || shoesSizes[index];
+                            const discountData = discountResults[index];
                             return {
                                 ...detailData,
                                 product: productData ? {
@@ -424,6 +458,7 @@ class OrderController {
                                 size: sizeData ? {
                                     size_name: sizeData.size_name,
                                 } : null,
+                                discount: discountData ? discountData.percent : null,
                             };
                         });
 

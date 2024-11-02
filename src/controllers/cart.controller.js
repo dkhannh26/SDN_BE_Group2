@@ -9,6 +9,7 @@ const TshirtPantSize = require('../models/pant_shirt_sizes')
 const ShoesSize = require('../models/shoes_sizes');
 const Image = require('../models/images');
 const Account = require('../models/accounts');
+const Discounts = require('../models/discounts')
 const { default: mongoose } = require('mongoose');
 class CartController {
     getList(req, res, next) {
@@ -70,16 +71,58 @@ class CartController {
                         ? Image.findOne({ accessory_id: cart.accessory_id })
                         : null;
                 });
+                // const discountPromises = carts.map((cart, index) => {
+                //     const discountId = cart.pant_shirt_size_detail_id?.tshirt_id ||
+                //         cart.pant_shirt_size_detail_id?.pant_id ||
+                //         cart.shoes_size_detail_id?.shoes_id ||
+                //         cart.accessory_id?.discount_id || null;
+                //     return discountId ? Discounts.findById(discountId) : Tshirt.findById(discountId).then((discount) => {
+                //         return Discounts.findById(discount.discount_id)
+                //     });
+                // });
+                const discountPromises = carts.map(async (cart) => {
+                    let discountId = null;
+
+                    if (cart.pant_shirt_size_detail_id) {
+                        const pantShirtDetail = cart.pant_shirt_size_detail_id;
+
+                        if (pantShirtDetail.tshirt_id) {
+                            const tshirt = await Tshirt.findById(pantShirtDetail.tshirt_id);
+                            discountId = tshirt?.discount_id;
+                        }
+                        if (!discountId && pantShirtDetail.pant_id) {
+                            const pant = await Pant.findById(pantShirtDetail.pant_id);
+                            discountId = pant?.discount_id;
+                        }
+                    }
+
+                    if (!discountId && cart.shoes_size_detail_id) {
+                        const shoesDetail = cart.shoes_size_detail_id;
+                        const shoes = await Shoes.findById(shoesDetail.shoes_id);
+                        discountId = shoes?.discount_id;
+                    }
+
+                    if (!discountId && cart.accessory_id) {
+                        const accessory = await Accessories.findById(cart.accessory_id);
+                        discountId = accessory?.discount_id;
+                    }
+
+                    return discountId ? Discounts.findById(discountId) : null;
+                });
+
                 Promise.all([Promise.all(shirtImagesPromises), Promise.all(shirtsizeTshirtPromises), Promise.all(shirtPromises),
                 Promise.all(shoesImagesPromises), Promise.all(shoessizeTshirtPromises), Promise.all(shoesPromises),
                 Promise.all(pantImagesPromises), Promise.all(pantsizeTshirtPromises), Promise.all(pantPromises),
-                Promise.all(accessoryImagesPromises)])
+                Promise.all(accessoryImagesPromises),
+                Promise.all(discountPromises)])
                     .then(([shirtImagesPromises, shirtsizeTshirtPromises, shirtPromises,
                         shoesImagesPromises, shoessizeTshirtPromises, shoesPromises,
                         pantImagesPromises, pantsizeTshirtPromises, pantPromises,
-                        accessoryImagesPromises]) => {
+                        accessoryImagesPromises,
+                        discountResults]) => {
                         const combinedData = carts.map((cart, index) => {
                             const cartData = cart.toObject();
+                            const discountData = discountResults[index];
                             // delete cartData.pant_shirt_size_detail_id;
                             // delete cartData._id;
                             return {
@@ -108,11 +151,14 @@ class CartController {
                                         : (cart.shoes_size_detail_id
                                             ? cart.shoes_size_detail_id.quantity
                                             : (cart.accessory_id ? cart.accessory_id.quantity : null)),
-                                    // product_id: cart.pant_shirt_size_detail_id
-                                    //     ? (cart.pant_shirt_size_detail_id.tshirt_id || cart.pant_shirt_size_detail_id.pant_id)
-                                    //     : (cart.shoes_size_detail_id
-                                    //         ? cart.shoes_size_detail_id.shoes_id
-                                    //         : (cart.accessory_id ? cart.accessory_id : null)),
+                                    // product_id: shirtPromises[index]?._id || shoesPromises[index]?._id || pantPromises[index]?._id || cart.accessory_id?._id || null,
+                                    product_id: cart.pant_shirt_size_detail_id
+                                        ? (cart.pant_shirt_size_detail_id.tshirt_id || cart.pant_shirt_size_detail_id.pant_id)
+                                        : (cart.shoes_size_detail_id
+                                            ? cart.shoes_size_detail_id.shoes_id
+                                            : (cart.accessory_id ? cart.accessory_id._id : null)),
+                                    discount: discountData ? discountData.percent : null,
+
                                 }
                             };
                         });
@@ -258,6 +304,18 @@ class CartController {
                 res.status(500).json({ error: err.message });
             });
     }
+    deleteAllCartById(req, res, next) {
+        const { account_id } = req.params;
+        console.log(account_id);
+        Cart.deleteMany(account_id)
+            .then((cart) => {
+                if (!cart) return res.status(404).json({ message: 'cart not found' });
+                res.status(200).json(cart);
+            })
+            .catch((err) => {
+                res.status(500).json({ error: err.message });
+            });
+    }
     getCartByAccountId(req, res, next) {
         const { accountId } = req.params;
         // Account.findById(account_id)
@@ -385,6 +443,20 @@ class CartController {
         // });
 
     }
+
+    // getDetailId(req, res, next) {
+    //     size.find({size_name: size_name})
+    //     c TshirtPantDetail.find({tshirt_id: tshirt_id} )
+    //     rs
+    //         tshirt.filter(item => item.size_id === size_id)
+    //         .then((cart) => {
+    //             if (!cart) return res.status(404).json({ message: 'cart not found' });
+    //             res.status(200).json(cart);
+    //         })
+    //         .catch((err) => {
+    //             res.status(500).json({ error: err.message });
+    //         });
+    // }
 }
 
 
