@@ -75,13 +75,20 @@ const getStatistic = async (req, res, next) => {
             }
         }));
 
+        const uniqueAccountIds = new Set(
+            orders
+                .map(order => order.account_id)
+                .filter(accountId => accountId !== undefined)
+        );
 
+        console.log(uniqueAccountIds.size);
 
         const rs = {
             revenue: revenue,
             products: products.length,
             orders: orders.length,
             ordersByMonth: totalByMonth,
+            accountNumber: uniqueAccountIds.size,
             tshirtsNumber: countTshirt,
             pantsNumber: countPant,
             shoesNumber: countShoes,

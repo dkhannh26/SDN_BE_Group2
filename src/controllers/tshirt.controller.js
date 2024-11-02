@@ -180,7 +180,7 @@ const getTshirt = async (req, res) => {
 
 }
 
-const addTshirt = async (req, res) => {
+const addTshirt = async (req, res, next) => {
   let tshirtID //biến trả về cho FE để gọi api post hình
   try {
     let { name, price, size, discount_id } = req.body;
@@ -198,6 +198,7 @@ const addTshirt = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(404).json({ error });
+    next()
   }
 
   res.status(200).json(tshirtID)
