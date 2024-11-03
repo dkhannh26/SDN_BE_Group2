@@ -11,12 +11,6 @@ const schema = new mongoose.Schema({
     required: true,
   },
 
-  order_id: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "orders",
-    },
-  ],
 });
 
 // Override all methods

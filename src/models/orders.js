@@ -17,14 +17,6 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "vouchers",
     },
-
-    order_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "order_details",
-      },
-    ],
-
     phone: {
       type: String,
       required: true,

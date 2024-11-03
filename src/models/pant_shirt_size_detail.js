@@ -20,12 +20,6 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "tshirts",
     },
-    order_detail_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "order_details",
-      },
-    ],
     quantity: {
       type: Number,
       required: true,

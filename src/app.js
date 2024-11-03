@@ -4,6 +4,9 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
 require("dotenv").config();
+var cors = require('cors');
+var app = express();
+
 const fileUpload = require("express-fileupload");
 var cors = require('cors')
 
@@ -11,9 +14,19 @@ const session = require("express-session");
 const connection = require("./config/database");
 const hostname = process.env.HOST_NAME;
 var indexRouter = require("./routes/index");
+
 var app = express();
 
 
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+app.use(express.json());
+app.use(cors())
+// app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

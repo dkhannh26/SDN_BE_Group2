@@ -156,7 +156,8 @@ const getPant = async (req, res, next) => {
                 const size = await Pant_shirt_sizes.findOne({ _id: item.size_id });
 
                 sizeResult.push({
-                    [size.size_name]: item.quantity
+                    [size.size_name]: item.quantity,
+                    [size.id]: item._id
                 });
             }
 

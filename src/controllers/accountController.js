@@ -208,7 +208,7 @@ const viewProfile = async (req, res) => {
   let username = req.params.accountId;
 
   try {
-    const user = await Account.findOne({ username }).populate("order_id");
+    const user = await Account.findOne({ username });
 
     res.status(200).json({ user });
   } catch (error) {
