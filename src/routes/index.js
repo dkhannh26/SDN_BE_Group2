@@ -8,6 +8,7 @@ const voucherRouter = require('./voucher');
 var cartRouter = require("./cart");
 var orderRouter = require("./order");
 var paymentRouter = require("./payment");
+var feedbackRouter = require("./feedback");
 
 
 const statisticRouter = require("./statistic");
@@ -25,6 +26,7 @@ router.use("/product", productRouter);
 router.use("/voucher", voucherRouter)
 router.use("/size", sizeRouter)
 router.use("/statistic", statisticRouter)
+router.use("/feedback", feedbackRouter)
 var accountRouter = require("./accountRouter");
 
 
