@@ -14,6 +14,7 @@ orderRouter.delete('/:orderId', orderController.deleteOrderById);
 orderRouter.get('/details/:orderId', orderController.getOrderDetails);
 orderRouter.put('/confirm/:orderId', orderController.confirmOrder);
 orderRouter.put('/cancel/:orderId', orderController.cancelOrder);
+orderRouter.put('/shipped/:orderId', orderController.shippedOrder);
 orderRouter.get('/account/:accountId', orderController.getOrderByAccountId);
 
 module.exports = orderRouter;
