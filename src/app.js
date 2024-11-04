@@ -5,7 +5,7 @@ var logger = require("morgan");
 var cors = require("cors");
 require("dotenv").config();
 const fileUpload = require("express-fileupload");
-var cors = require('cors')
+var cors = require("cors");
 
 const session = require("express-session");
 const connection = require("./config/database");
@@ -13,14 +13,12 @@ const hostname = process.env.HOST_NAME;
 var indexRouter = require("./routes/index");
 var app = express();
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
-app.use(cors())
+app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
-
 
 app.use(fileUpload());
 var delay = require("./middleware/delay");
@@ -37,9 +35,6 @@ app.use(
   })
 );
 
-
 app.use("/", indexRouter);
-
-
 
 module.exports = app;

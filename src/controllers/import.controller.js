@@ -1,15 +1,16 @@
+require("dotenv").config();
 const Import_detail = require("../models/import_details");
 const Imports = require("../models/imports");
 const Pants = require("../models/pants");
 const Tshirts = require("../models/tshirts");
 const Shoes = require("../models/shoes");
-
 const Accessories = require("../models/accessories");
 const Account = require("../models/accounts");
 const Pant_shirt_sizes = require("../models/pant_shirt_sizes");
 const Pant_shirt_size_detail = require("../models/pant_shirt_size_detail");
 const Shoes_sizes = require("../models/shoes_sizes");
 const Shoes_size_detail = require("../models/shoes_size_detail");
+const jwt = require("jsonwebtoken");
 
 // const createImportDetail = async (req, res) => {
 //   const { pant, tshirt, shoes, accessory } = req.body;
@@ -295,9 +296,16 @@ const deleteImport = async (req, res) => {
 const confirmImport = async (req, res) => {
   let id = req.params.id;
   try {
+    const token = req.headers["authorization"]?.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { username, email, password, phone, address, role } = decoded;
+
+    let user = await Account.findOne({ username });
+
     let im = await Imports.updateOne(
       { _id: id },
-      { confirmed_user_id: "67124bfdab0e1de0d8ba55bd", status: "processing" }
+      { confirmed_user_id: user._id, status: "processing" }
     );
     //import => import detail => product size detail
     let imports = await Imports.findOne({ _id: id });
