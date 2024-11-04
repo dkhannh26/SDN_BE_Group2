@@ -13,6 +13,7 @@ const {
   verifyChange,
   checkAuth,
   createCart,
+  changePassword,
 } = require("../controllers/accountController");
 
 router.post("/login", handleLogin);
@@ -36,5 +37,7 @@ router.put("/update/:accountId/:token", updateProfile);
 router.delete("/delete/:accountId", deleteProfile);
 
 router.post("/create-cart", createCart);
+
+router.put("/change-password/:username", changePassword);
 
 module.exports = router;

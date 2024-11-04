@@ -313,6 +313,29 @@ const createCart = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  let username = req.params.username;
+  let { oldPassword, newPassword } = req.body;
+
+  try {
+    let user = await Account.findOne({ username });
+    const isMatchPassword = await bcrypt.compare(oldPassword, user.password);
+    if (isMatchPassword) {
+      const hashPassword = await bcrypt.hash(newPassword, saltRounds);
+      await Account.updateOne({ username }, { password: hashPassword });
+      return res
+        .status(200)
+        .json({ success: true, message: "Change password successfully" });
+    } else {
+      return res
+        .status(200)
+        .json({ success: false, message: "Old password is incorrect" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   handleLogin,
   checkAuth,
@@ -326,4 +349,5 @@ module.exports = {
   verifyCreate,
   verifyChange,
   createCart,
+  changePassword,
 };
