@@ -389,9 +389,9 @@ class OrderController {
                 const imagePromises = details.map((detail) => {
 
 
-                    if (detail.pant_shirt_size_detail_id.tshirt_id) {
+                    if (detail.pant_shirt_size_detail_id?.tshirt_id) {
                         return Image.findOne({ tshirt_id: detail.pant_shirt_size_detail_id.tshirt_id });
-                    } else if (detail.pant_shirt_size_detail_id.pant_id) {
+                    } else if (detail.pant_shirt_size_detail_id?.pant_id) {
                         return Image.findOne({ pant_id: detail.pant_shirt_size_detail_id.pant_id });
                     } else if (detail.shoes_size_detail_id) {
                         return Image.findOne({ shoes_id: detail.shoes_size_detail_id.shoes_id });
