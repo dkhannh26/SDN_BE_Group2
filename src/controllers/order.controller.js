@@ -387,8 +387,12 @@ class OrderController {
                     Accessory.findOne({ _id: accessories.accessory_id })
                 );
                 const imagePromises = details.map((detail) => {
-                    if (detail.pant_shirt_size_detail_id) {
-                        return Image.findOne({ $or: [{ tshirt_id: detail.pant_shirt_size_detail_id.tshirt_id }, { pant_id: detail.pant_shirt_size_detail_id.pant_id }] });
+
+
+                    if (detail.pant_shirt_size_detail_id.tshirt_id) {
+                        return Image.findOne({ tshirt_id: detail.pant_shirt_size_detail_id.tshirt_id });
+                    } else if (detail.pant_shirt_size_detail_id.pant_id) {
+                        return Image.findOne({ pant_id: detail.pant_shirt_size_detail_id.pant_id });
                     } else if (detail.shoes_size_detail_id) {
                         return Image.findOne({ shoes_id: detail.shoes_size_detail_id.shoes_id });
                     } else if (detail.accessory_id) {
@@ -396,6 +400,7 @@ class OrderController {
                     }
                     return null;
                 });
+
                 const shirtSizePromises = details.map((product) =>
                     TshirtPantSize.findOne({ _id: product.pant_shirt_size_detail_id?.size_id })
                 );
@@ -450,6 +455,8 @@ class OrderController {
                 ])
                     .then(([shirts, pants, shoes, accessories, images, shirtSizes, pantSizes, shoesSizes, discountResults]) => {
                         const combinedData = details.map((detail, index) => {
+                            console.log('images', images);
+
                             const detailData = detail.toObject();
 
                             const productData = shirts[index] || pants[index] || shoes[index] || accessories[index];
