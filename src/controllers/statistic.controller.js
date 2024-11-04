@@ -77,8 +77,8 @@ const getStatistic = async (req, res, next) => {
 
         const uniqueAccountIds = new Set(
             orders
-                .map(order => order.account_id)
-                .filter(accountId => accountId !== undefined)
+                .map(order => order.account_id + '')
+            // .filter(accountId => accountId !== undefined)
         );
 
         console.log(uniqueAccountIds.size);
