@@ -13,7 +13,7 @@ const schema = new mongoose.Schema(
       ref: "accounts",
     },
 
-    voucher_is: {
+    voucher_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "vouchers",
     },
