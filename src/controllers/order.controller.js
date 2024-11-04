@@ -116,7 +116,7 @@ class OrderController {
         console.log(accountId);
         Orders.find({
             account_id: accountId,
-            status: { $in: ['delivered', 'cancelled'] }
+            status: { $in: ['delivered', 'cancelled', 'shipped'] }
         })
             .then((orders) => {
                 if (!orders) return res.status(404).json({ message: 'orders not found' });
@@ -336,7 +336,7 @@ class OrderController {
                                 .catch((err) => {
                                     console.log('Error updating order status to delivered', err);
                                 });
-                        }, 60000)
+                        }, 10000)
                     })
             })
             .catch((err) => {
@@ -345,6 +345,18 @@ class OrderController {
     }
     cancelOrder(req, res, next) {
         Orders.findByIdAndUpdate(req.params.orderId, { status: 'cancelled' }, { new: true })
+            .populate('account_id', 'username')
+            .then((order) => {
+                if (!order) return res.status(404).json({ message: 'order not found' });
+                res.status(200).json(order);
+            })
+            .catch((err) => {
+                res.status(500).json({ error: err.message });
+            });
+    }
+
+    shippedOrder(req, res, next) {
+        Orders.findByIdAndUpdate(req.params.orderId, { status: 'shipped' }, { new: true })
             .populate('account_id', 'username')
             .then((order) => {
                 if (!order) return res.status(404).json({ message: 'order not found' });
