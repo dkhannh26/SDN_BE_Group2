@@ -139,7 +139,7 @@ const exportExcel = async (req, res, next) => {
     sheet.getCell("A9").value = "Accessories";
     sheet.getCell("B9").value = statistic.accessories;
 
-    for (let rowIndex = 2; rowIndex <= 12; rowIndex++) {
+    for (let rowIndex = 2; rowIndex <= 13; rowIndex++) {
       const cell = sheet.getCell(`E${rowIndex}`);
       const cellValue = sheet.getCell(`F${rowIndex}`);
       cell.value = ordersByMonth[rowIndex - 2].name;
