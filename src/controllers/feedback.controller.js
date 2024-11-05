@@ -16,9 +16,6 @@ class FeedbackController {
         Feedback.find(filter)
             .populate('account_id', 'username')
             .then(feedback => {
-                if (feedback.length === 0) {
-                    return res.status(404).json({ message: "No feedback found for the given product." });
-                }
                 res.json(feedback);
             })
             .catch(error => {
