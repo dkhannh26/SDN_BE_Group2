@@ -1,4 +1,8 @@
+const Account = require("../models/accounts");
 const Feedback = require("../models/feedbacks");
+const mongoose = require("mongoose");
+const FeedBackLike = require("../models/feedback_like");
+
 class FeedbackController {
   getList(req, res, next) {
     const { productId } = req.params;
@@ -14,7 +18,7 @@ class FeedbackController {
     };
 
     Feedback.find(filter)
-      .populate("account_id", "username")
+      .populate("account_id")
       .then((feedback) => {
         res.json(feedback);
       })
@@ -34,10 +38,12 @@ class FeedbackController {
       });
   }
 
-  create(req, res, next) {
+  async create(req, res, next) {
     Feedback.create(req.body)
-      .then(() => {
-        res.send("Create feedback successfully");
+      .then((data) => {
+        console.log(data);
+
+        res.json(data);
       })
       .catch((error) => {
         console.log(error);
@@ -62,6 +68,58 @@ class FeedbackController {
       .catch((error) => {
         console.log(error);
       });
+  }
+
+  async like(req, res, next) {
+    // let like = req.body?.like;
+    try {
+      let account_id = req.body?.account_id;
+      let feedback_id = req.params.feedbackId;
+
+      const existingLike = await FeedBackLike.findOne({
+        feedback_id,
+        account_id,
+      });
+
+      if (existingLike) {
+        await FeedBackLike.deleteOne({ feedback_id, account_id });
+        await Feedback.findByIdAndUpdate(feedback_id, {
+          $inc: { likeCount: -1 },
+        });
+        return res
+          .status(200)
+          .json({ message: "Unliked successfully", liked: false });
+      } else {
+        await FeedBackLike.create({ feedback_id, account_id });
+
+        await Feedback.findByIdAndUpdate(feedback_id, {
+          $inc: { likeCount: 1 },
+        });
+        res.status(200).json({ message: "Liked successfully", liked: true });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async getFeedbackLike(req, res, next) {
+    // let like = req.body?.like;
+    try {
+      let account_id = req.params.accountId;
+
+      let feedbackLike = await FeedBackLike.find({ account_id });
+
+      let feedbackArr = [];
+      feedbackLike.forEach((e) => {
+        feedbackArr.push(e.feedback_id);
+      });
+
+      // console.log(feedbackArr);
+
+      res.json(feedbackArr);
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 

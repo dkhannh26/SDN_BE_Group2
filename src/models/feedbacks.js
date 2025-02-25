@@ -27,6 +27,14 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "tshirts",
     },
+    // star: {
+    //   type: Number,
+    //   min: 1,
+    //   max: 5,
+    //   required: true,
+    // },
+
+    likeCount: { type: Number, default: 0 },
   },
   {
     timestamps: true, // createdAt, updatedAt
